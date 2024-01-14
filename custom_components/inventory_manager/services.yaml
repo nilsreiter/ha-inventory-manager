@@ -7,7 +7,6 @@ consume:
   fields:
     amount:
       name: Amount
-      description:
       selector:
         number:
     predefined-amount:

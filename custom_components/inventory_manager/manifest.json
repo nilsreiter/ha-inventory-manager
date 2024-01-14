@@ -1,13 +1,13 @@
 {
+  "domain": "inventory_manager",
+  "name": "Inventory Manager",
   "codeowners": [
     "@nilsreiter"
   ],
   "config_flow": true,
   "dependencies": [],
   "documentation": "https://github.com/nilsreiter/ha-inventory-manager",
-  "domain": "inventory_manager",
   "iot_class": "calculated",
-  "name": "Inventory Manager",
   "requirements": [],
   "version": "1.0.0"
 }
