@@ -39,13 +39,15 @@ async def async_setup_entry(
     config_entry: config_entries.ConfigEntry,
     async_add_entities,
 ):
-    """Setup sensors from a config entry created in the integrations UI."""
+    """Set up sensors from a config entry created in the integrations UI."""
     config = hass.data[DOMAIN][config_entry.entry_id]
     sensors = [WarnSensor(hass, config)]
     async_add_entities(sensors, update_before_add=True)
 
 
 class WarnSensor(BinarySensorEntity):
+    """Represents a warning entity."""
+
     _attr_has_entity_name = True
 
     def __init__(self, hass: core.HomeAssistant, pill: Item):

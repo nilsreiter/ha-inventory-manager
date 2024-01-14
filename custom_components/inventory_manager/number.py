@@ -34,10 +34,10 @@ async def async_setup_entry(
 
     sensors = [
         SupplyEntity(hass, config),
-        DoseConfiguration(hass, config, PillNumberEntityFeature.MORNING),
-        DoseConfiguration(hass, config, PillNumberEntityFeature.NOON),
-        DoseConfiguration(hass, config, PillNumberEntityFeature.EVENING),
-        DoseConfiguration(hass, config, PillNumberEntityFeature.NIGHT),
+        ConsumptionEntity(hass, config, PillNumberEntityFeature.MORNING),
+        ConsumptionEntity(hass, config, PillNumberEntityFeature.NOON),
+        ConsumptionEntity(hass, config, PillNumberEntityFeature.EVENING),
+        ConsumptionEntity(hass, config, PillNumberEntityFeature.NIGHT),
     ]
 
     platform = entity_platform.async_get_current_platform()
@@ -53,7 +53,7 @@ async def async_setup_entry(
     async_add_entities(sensors, update_before_add=True)
 
 
-class PillNumber(RestoreNumber):
+class InventoryNumber(RestoreNumber):
     """Represents a numeric entity."""
 
     _attr_has_entity_name = True
@@ -77,7 +77,7 @@ class PillNumber(RestoreNumber):
     async def async_added_to_hass(self):
         try:
             last_data = await self.async_get_last_number_data()
-            if last_data != None:
+            if last_data is not None:
                 last_number_data = last_data.as_dict()
                 self.pill.set_n(
                     last_number_data["native_value"], self._spec, restoring=True
@@ -124,7 +124,7 @@ class PillNumber(RestoreNumber):
         return DeviceInfo(identifiers={(DOMAIN, self._device_id)}, name=self.pill.name)
 
 
-class DoseConfiguration(PillNumber):
+class ConsumptionEntity(InventoryNumber):
     """Represents the dose consumed at a certain time during the day."""
 
     def __init__(
@@ -149,7 +149,7 @@ class DoseConfiguration(PillNumber):
         return "mdi:pill-multiple"
 
 
-class SupplyEntity(PillNumber):
+class SupplyEntity(InventoryNumber):
     """Represents the supply of the current item."""
 
     def __init__(self, hass: core.HomeAssistant, pill) -> None:
