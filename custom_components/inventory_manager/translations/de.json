@@ -1,0 +1,51 @@
+{
+  "title": "Tabletten für den Hund",
+  "config": {
+    "error": {
+      "auth": "The auth token provided is not valid.",
+      "invalid_path": "The path provided is not valid. Should be in the format `user/repo-name`."
+    },
+    "step": {
+      "user": {
+        "data": {
+          "pill_name": "Name der Tablette",
+          "pill_size": "Menge des Wirkstoffs (mg)",
+          "pill_agent": "Wirkstoff",
+          "pill_vendor": "Hersteller",
+          "pill_warning_days_before_empty": "Wie viele Tage vor leerem Bestand warnen?"
+        },
+        "description": "Tablette beschreiben",
+        "title": "Details ergänzen"
+      }
+    }
+  },
+  "entity": {
+    "number": {
+      "supply_entity": {
+        "name": "Vorrat"
+      },
+      "morning_entity": {
+        "name": "Morgens"
+      },
+      "noon_entity": {
+        "name": "Mittags"
+      },
+      "evening_entity": {
+        "name": "Abends"
+      },
+      "night_entity": {
+        "name": "Nachts"
+      }
+    },
+    "binary_sensor": {
+      "binary_sensor": {
+        "name": "Bald leer"
+      }
+    },
+    "sensor": {
+      "sensor_entity": {
+        "name": "Vorrat leer"
+      }
+    }
+  }
+}

@@ -1,0 +1,24 @@
+consume:
+  name: Consume
+  target:
+    entity:
+      domain: number
+      integration: pills
+  fields:
+    amount:
+      name: Amount
+      description:
+      selector:
+        number:
+    predefined-amount:
+      name: Predefined Amount
+      selector:
+        select:
+          translation_key: "time"
+          options:
+            - "morning"
+            - "noon"
+            - "evening"
+            - "night"
+
+

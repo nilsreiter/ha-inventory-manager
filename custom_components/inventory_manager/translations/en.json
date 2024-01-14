@@ -1,0 +1,49 @@
+{
+  "title": "Bona Pills",
+  "config": {
+    "error": {
+      "auth": "The auth token provided is not valid.",
+      "invalid_path": "The path provided is not valid. Should be in the format `user/repo-name`."
+    },
+    "step": {
+      "user": {
+        "data": {
+          "pill_name": "Pill name",
+          "pill_size": "Agent weight",
+          "pill_vendor": "Vendor"
+        },
+        "description": "Add the name of the pill",
+        "title": "Add Details"
+      }
+    }
+  },
+  "entity": {
+    "number": {
+      "supply_entity": {
+        "name": "Supply"
+      },
+      "morning_entity": {
+        "name": "Morning"
+      },
+      "noon_entity": {
+        "name": "Noon"
+      },
+      "evening_entity": {
+        "name": "Evening"
+      },
+      "night_entity": {
+        "name": "Night"
+      }
+    },
+    "binary_sensor": {
+      "binary_sensor": {
+        "name": "Soon empty"
+      }
+    },
+    "sensor": {
+      "sensor_entity": {
+        "name": "Spent"
+      }
+    }
+  }
+}

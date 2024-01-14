@@ -1,0 +1,13 @@
+{
+  "codeowners": [
+    "@nilsreiter"
+  ],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/nilsreiter/pills-repository",
+  "domain": "inventory_manager",
+  "iot_class": "calculated",
+  "name": "Inventory Manager",
+  "requirements": [],
+  "version": "1.0.0"
+}
