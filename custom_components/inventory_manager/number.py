@@ -87,7 +87,7 @@ class InventoryNumber(RestoreNumber):
 
     @property
     def native_value(self):
-        return self.pill.get_n(self._spec)
+        return self.pill[self._spec]
 
     @property
     def unique_id(self) -> str:

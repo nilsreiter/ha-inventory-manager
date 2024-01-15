@@ -53,7 +53,7 @@ class ConsumptionSensor(SensorEntity):
         return STRING_SENSOR_ENTITY
 
     @property
-    def native_value(self):
+    def native_value(self) -> datetime:
         daily = self.pill.daily
 
         supply = self.pill.supply

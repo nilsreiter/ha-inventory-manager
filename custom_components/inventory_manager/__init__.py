@@ -68,6 +68,9 @@ class Item:
         self._listeners = []
         self._entity_ids = {}
 
+    def __getitem__(self, key: PillNumberEntityFeature) -> float:
+        return self._numbers.setdefault(key, 0)
+
     def d(self):
         return self._data
 
@@ -94,7 +97,7 @@ class Item:
         return daysRemaining
 
     @property
-    def device_id(self):
+    def device_id(self) -> str:
         return (
             self._data[CONF_PILL_NAME].lower()
             + "-"
@@ -117,32 +120,32 @@ class Item:
 
     @property
     def daily(self) -> float:
-        s = 0
-        s += self.morning
-        s += self.noon
-        s += self.evening
-        s += self.night
+        """This method returns the total daily consumption of the item."""
+        s = self.__morning
+        s += self.__noon
+        s += self.__evening
+        s += self.__night
         return s
 
-    def get_n(self, c) -> float:
-        return self._numbers.setdefault(c, 0)
+    # def get_n(self, c) -> float:
+    #   return self._numbers.setdefault(c, 0)
 
     @property
     def supply(self) -> float:
         return self._numbers.setdefault(PillNumberEntityFeature.SUPPLY, 0)
 
     @property
-    def morning(self) -> float:
+    def __morning(self) -> float:
         return self._numbers.setdefault(PillNumberEntityFeature.MORNING, 0)
 
     @property
-    def noon(self) -> float:
+    def __noon(self) -> float:
         return self._numbers.setdefault(PillNumberEntityFeature.NOON, 0)
 
     @property
-    def evening(self) -> float:
+    def __evening(self) -> float:
         return self._numbers.setdefault(PillNumberEntityFeature.EVENING, 0)
 
     @property
-    def night(self) -> float:
+    def __night(self) -> float:
         return self._numbers.setdefault(PillNumberEntityFeature.NIGHT, 0)

@@ -72,32 +72,16 @@ class WarnSensor(BinarySensorEntity):
         return self._unique_id
 
     @property
-    def should_poll(self):
+    def should_poll(self) -> bool:
         return False
 
     @property
-    def device_class(self):
+    def device_class(self) -> BinarySensorDeviceClass:
         return BinarySensorDeviceClass.PROBLEM
 
     @property
     def translation_key(self) -> str | None:
         return STRING_PROBLEM_ENTITY
-
-    @property
-    def native_value(self):
-        daily = self.pill.daily
-
-        supply = self.pill.supply
-        self.attrs[ATTR_DAILY] = daily
-
-        if daily > 0:
-            daysRemaining = supply / daily
-        else:
-            daysRemaining = 10000
-
-        self.attrs[ATTR_DAYS_REMAINING] = daysRemaining
-        self._state = now() + timedelta(days=daysRemaining)
-        return self._state
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
