@@ -6,17 +6,23 @@ import logging
 from homeassistant import config_entries, core
 from homeassistant.const import Platform
 from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers import entity_registry
+from homeassistant.helpers.entity import Entity, generate_entity_id
 from homeassistant.helpers.device_registry import DeviceEntryType
 
-from .const import CONF_PILL_NAME, CONF_PILL_SIZE, CONF_PILL_VENDOR, DOMAIN
-
-PLATFORMS: list[str] = [Platform.NUMBER, Platform.SENSOR, Platform.BINARY_SENSOR]
+from .const import (
+    CONF_PILL_NAME,
+    CONF_PILL_SIZE,
+    CONF_PILL_VENDOR,
+    DOMAIN,
+    SERVICE_TAKE,
+)
 
 
 _LOGGER = logging.getLogger(__name__)
 
 
-class PillNumberEntityFeature(IntFlag):
+class InventoryManagerEntityType(IntFlag):
     """Supported features of the number entities."""
 
     SUPPLY = 1
@@ -24,6 +30,11 @@ class PillNumberEntityFeature(IntFlag):
     MORNING = 8
     NOON = 32
     EVENING = 64
+    WARNING = 128
+    CONSUMPTION = 256
+
+
+PLATFORMS: list[str] = [Platform.NUMBER, Platform.SENSOR, Platform.BINARY_SENSOR]
 
 
 async def async_setup_entry(
@@ -32,7 +43,7 @@ async def async_setup_entry(
     """Set up platform from a ConfigEntry."""
     hass.data.setdefault(DOMAIN, {})
 
-    pill_object = Item(hass, entry.data)
+    pill_object = InventoryManagerConfig(hass, entry.data)
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = pill_object
 
     device_registry = dr.async_get(hass)
@@ -58,94 +69,112 @@ async def async_setup_entry(
     return True
 
 
-class Item:
+def setup(hass: core.HomeAssistant, config):
+    def consume_service(call: core.ServiceCall):
+        _LOGGER.debug(call)
+        amount = 0
+
+        if "amount" in call.data:
+            amount = call.data["amount"]
+            for entity_id in call.data["entity_id"]:
+                hass.states.set(
+                    entity_id, float(hass.states.get(entity_id).state) - amount
+                )
+        elif "predefined-amount" in call.data:
+            amount_entity = call.data["predefined-amount"]
+            for e in call.data["entity_id"]:
+                if amount_entity == "morning":
+                    amount = hass.states.get(e).attributes.get(
+                        InventoryManagerEntityType.MORNING
+                    )
+                    # hass.states.set(e, hass.states.get(e))
+
+    hass.services.register(DOMAIN, SERVICE_TAKE, consume_service)
+
+    return True
+
+
+class EntityConfig:
+    def __init__(
+        self, hass: core.HomeAssistant, d: dict, t: InventoryManagerEntityType
+    ) -> None:
+        self.device_id = (
+            d[CONF_PILL_NAME].lower() + "-" + d.get(CONF_PILL_SIZE, "").lower()
+        )
+        self.entity_type = t
+
+        if t == InventoryManagerEntityType.CONSUMPTION:
+            fmt = "sensor.{}"
+        elif t == InventoryManagerEntityType.WARNING:
+            fmt = "binary_sensor.{}"
+        else:
+            fmt = "number.{}"
+        self.unique_id = self.device_id + "_" + t.name
+        self.entity_id = generate_entity_id(
+            fmt,
+            self.unique_id,
+            hass=hass,
+        )
+
+
+class InventoryManagerConfig:
     """Bla."""
 
     def __init__(self, hass: core.HomeAssistant, d) -> None:
         self._hass = hass
         self._data = d
-        self._numbers = {}
-        self._listeners = []
-        self._entity_ids = {}
 
-    def __getitem__(self, key: PillNumberEntityFeature) -> float:
-        return self._numbers.setdefault(key, 0)
+        self.device_id = (
+            d[CONF_PILL_NAME].lower() + "-" + d.get(CONF_PILL_SIZE, "").lower()
+        )
+        self.entity_config = {
+            InventoryManagerEntityType.SUPPLY: EntityConfig(
+                hass, d, InventoryManagerEntityType.SUPPLY
+            ),
+            InventoryManagerEntityType.MORNING: EntityConfig(
+                hass, d, InventoryManagerEntityType.MORNING
+            ),
+            InventoryManagerEntityType.NOON: EntityConfig(
+                hass, d, InventoryManagerEntityType.NOON
+            ),
+            InventoryManagerEntityType.EVENING: EntityConfig(
+                hass, d, InventoryManagerEntityType.EVENING
+            ),
+            InventoryManagerEntityType.NIGHT: EntityConfig(
+                hass, d, InventoryManagerEntityType.NIGHT
+            ),
+            InventoryManagerEntityType.CONSUMPTION: EntityConfig(
+                hass, d, InventoryManagerEntityType.CONSUMPTION
+            ),
+            InventoryManagerEntityType.WARNING: EntityConfig(
+                hass, d, InventoryManagerEntityType.WARNING
+            ),
+        }
 
     def d(self):
         return self._data
 
-    def take_dose(self, dose: PillNumberEntityFeature) -> None:
-        self.set_n(self.supply - self._numbers[dose], PillNumberEntityFeature.SUPPLY)
+    # def take_dose(self, dose: InventoryManagerEntityType) -> None:
+    #    self.entities[InventoryManagerEntityType.SUPPLY].set_native_value(
+    #        self.supply - self.entities[dose].native_value
+    #    )
+    # self.set_n(, InventoryManagerEntityType.SUPPLY)
 
-    def take_number(self, number: int) -> None:
-        if number != 0:
-            self.set_n(self.supply - number, PillNumberEntityFeature.SUPPLY)
+    # def take_number(self, number: int) -> None:
+    #    if number != 0:
+    #        self.set_n(self.supply - number, InventoryManagerEntityType.SUPPLY)
 
     @property
     def name(self) -> str:
         return self._data[CONF_PILL_NAME] + " " + self._data.get(CONF_PILL_SIZE, "")
 
-    @property
-    def days_remaining(self) -> int:
-        daily = self.daily
-        supply = self.supply
-
-        if daily > 0:
-            daysRemaining = supply / daily
-        else:
-            daysRemaining = "unavailable"
-        return daysRemaining
-
-    @property
-    def device_id(self) -> str:
-        return (
-            self._data[CONF_PILL_NAME].lower()
-            + "-"
-            + self._data.get(CONF_PILL_SIZE, "").lower()
-        )
-
-    def add_listener(self, listener) -> None:
-        self._listeners.append(listener)
-
-    def set_supply_entity(self, number_entity) -> None:
-        self._supply = number_entity
-
-    def set_n(self, val: float, time: PillNumberEntityFeature, restoring=False) -> None:
-        if val < 0:
-            self._numbers[time] = 0.0
-        else:
-            self._numbers[time] = val
-        if not restoring:
-            [l.schedule_update_ha_state() for l in self._listeners]
-
-    @property
-    def daily(self) -> float:
-        """This method returns the total daily consumption of the item."""
-        s = self.__morning
-        s += self.__noon
-        s += self.__evening
-        s += self.__night
-        return s
+    # def set_n(self, val: float, time: PillNumberEntityFeature, restoring=False) -> None:
+    #     if val < 0:
+    #         self._numbers[time] = 0.0
+    #     else:
+    #         self._numbers[time] = val
+    #     if not restoring:
+    #         [l.schedule_update_ha_state() for l in self._listeners]
 
     # def get_n(self, c) -> float:
     #   return self._numbers.setdefault(c, 0)
-
-    @property
-    def supply(self) -> float:
-        return self._numbers.setdefault(PillNumberEntityFeature.SUPPLY, 0)
-
-    @property
-    def __morning(self) -> float:
-        return self._numbers.setdefault(PillNumberEntityFeature.MORNING, 0)
-
-    @property
-    def __noon(self) -> float:
-        return self._numbers.setdefault(PillNumberEntityFeature.NOON, 0)
-
-    @property
-    def __evening(self) -> float:
-        return self._numbers.setdefault(PillNumberEntityFeature.EVENING, 0)
-
-    @property
-    def __night(self) -> float:
-        return self._numbers.setdefault(PillNumberEntityFeature.NIGHT, 0)

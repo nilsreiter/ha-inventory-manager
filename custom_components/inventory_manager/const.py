@@ -13,6 +13,7 @@ ATTR_DAILY = "daily"
 ATTR_DAYS_REMAINING = "days_remaining"
 
 SERVICE_TAKE = "consume"
+SERVICE_TAKE_E = "consume_e"
 
 STRING_PROBLEM_ENTITY = "binary_sensor"
 STRING_SENSOR_ENTITY = "sensor_entity"
