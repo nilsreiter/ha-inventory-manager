@@ -1,5 +1,4 @@
 consume:
-  name: Consume
   target:
     entity:
       domain: number
@@ -9,11 +8,9 @@ consume:
 
   fields:
     amount:
-      name: Amount
       selector:
         number:
     predefined-amount:
-      name: Predefined Amount
       selector:
         select:
           translation_key: "time"

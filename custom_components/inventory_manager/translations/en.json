@@ -1,5 +1,5 @@
 {
-  "title": "Supplies",
+  "title": "Inventory Manager",
   "config": {
     "error": {
       "auth": "The auth token provided is not valid.",
@@ -14,6 +14,22 @@
         },
         "description": "Add the name of the pill",
         "title": "Add Details"
+      }
+    }
+  },
+  "services": {
+    "consume": {
+      "name": "Consume",
+      "description": "This service can be called to consume a specified or predefined number of pieces from a supply. It belongs to the Inventory Manager integration. Important: Only one of the fields `amount` and `predefined-amount` can be specified.",
+      "fields": {
+        "amount": {
+          "name": "Amount",
+          "description": "How many pieces should we consume?"
+        },
+        "predefined-amount": {
+          "name": "Predefined Amount",
+          "description": "Which pre-defined amount do we consume?"
+        }
       }
     }
   },
