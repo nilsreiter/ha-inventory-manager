@@ -14,7 +14,7 @@ This integration is for tracking specific items in your household.
 
 I have devloped this integration with two use cases in mind:
 
-- Track medicine for our dog. Unfortunately, our [dog](img/bona.jpeg) is pretty sick, which means we have to regularly feed her several pills. The integration service is called every morning and evening, and we get a prediction on when it is time to get new supplies. ![](img/screenshot1.png)
+- Track medicine for our dog. Unfortunately, [our dog Bona](img/bona.jpeg) is pretty sick, which means we have to regularly feed her several pills. The integration service is called every morning and evening, and we get a prediction on when it is time to get new supplies. ![](img/screenshot1.png)
 
 - Track dishwasher tabs. Every time the dishwasher starts (tracked via power consumption), our supply of dishwasher tabs is reduced by one. To predict when we run out, we assume that we run it 0.5 times every day.
 
