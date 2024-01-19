@@ -1,6 +1,6 @@
+"""Binary sensor entity to indicate the need to resupply."""
 import logging
 
-from typing import Any
 
 from homeassistant import config_entries, core
 from homeassistant.components.binary_sensor import (

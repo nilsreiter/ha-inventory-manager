@@ -8,13 +8,13 @@
     "step": {
       "user": {
         "data": {
-          "item_name": "Name der Tablette",
-          "item_size": "Menge des Wirkstoffs (mg)",
+          "item_name": "Name des Objekts",
+          "item_size": "Menge oder Größe",
           "item_agent": "Wirkstoff",
           "item_vendor": "Hersteller",
           "warning_days_before_empty": "Wie viele Tage vor leerem Bestand warnen?"
         },
-        "description": "Tablette beschreiben",
+        "description": "Objekt beschreiben",
         "title": "Details ergänzen"
       }
     }

@@ -7,7 +7,7 @@ from homeassistant import config_entries
 import homeassistant.helpers.config_validation as cv
 
 from .const import (
-    CONF_PILL_AGENT,
+    CONF_ITEM_AGENT,
     CONF_ITEM_NAME,
     CONF_ITEM_SIZE,
     CONF_ITEM_VENDOR,
@@ -21,7 +21,7 @@ PILL_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_ITEM_NAME): cv.string,
         vol.Optional(CONF_ITEM_SIZE): cv.string,
-        vol.Optional(CONF_PILL_AGENT): cv.string,
+        vol.Optional(CONF_ITEM_AGENT): cv.string,
         vol.Optional(CONF_ITEM_VENDOR): cv.string,
         vol.Required(CONF_SENSOR_BEFORE_EMPTY, default=10): cv.positive_int,
     }

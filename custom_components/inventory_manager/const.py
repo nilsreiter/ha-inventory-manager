@@ -8,7 +8,7 @@ CONF_ITEM_SIZE = "item_size"
 CONF_ITEM_VENDOR = "item_vendor"
 CONF_SENSOR_BEFORE_EMPTY = "warning_days_before_empty"
 CONF_PILLS = "pills"
-CONF_PILL_AGENT = "pill_agent"
+CONF_ITEM_AGENT = "item_agent"
 
 UNIT = "pcs."
 
