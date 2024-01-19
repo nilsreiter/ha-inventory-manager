@@ -14,8 +14,11 @@ from .const import (
     CONF_ITEM_SIZE,
     CONF_ITEM_VENDOR,
     DOMAIN,
+    ENTITY_ID,
+    ENTITY_TYPE,
     SPACE,
     UNDERSCORE,
+    UNIQUE_ID,
 )
 
 
@@ -63,26 +66,6 @@ async def async_setup_entry(
     return True
 
 
-class EntityConfig:
-    def __init__(
-        self, hass: core.HomeAssistant, device_id: str, t: InventoryManagerEntityType
-    ) -> None:
-        self.entity_type = t
-
-        if t == InventoryManagerEntityType.EMPTYPREDICTION:
-            fmt = "sensor.{}"
-        elif t == InventoryManagerEntityType.WARNING:
-            fmt = "binary_sensor.{}"
-        else:
-            fmt = "number.{}"
-        self.unique_id = device_id + UNDERSCORE + t.name.lower()
-        self.entity_id = generate_entity_id(
-            fmt,
-            self.unique_id,
-            hass=hass,
-        )
-
-
 class InventoryManagerItem:
     """This class represents the item data itself."""
 
@@ -104,27 +87,23 @@ class InventoryManagerItem:
         )
         self.entity = {}
         self.entity_config = {
-            InventoryManagerEntityType.SUPPLY: EntityConfig(
-                hass, self.device_id, InventoryManagerEntityType.SUPPLY
-            ),
-            InventoryManagerEntityType.MORNING: EntityConfig(
-                hass, self.device_id, InventoryManagerEntityType.MORNING
-            ),
-            InventoryManagerEntityType.NOON: EntityConfig(
-                hass, self.device_id, InventoryManagerEntityType.NOON
-            ),
-            InventoryManagerEntityType.EVENING: EntityConfig(
-                hass, self.device_id, InventoryManagerEntityType.EVENING
-            ),
-            InventoryManagerEntityType.NIGHT: EntityConfig(
-                hass, self.device_id, InventoryManagerEntityType.NIGHT
-            ),
-            InventoryManagerEntityType.EMPTYPREDICTION: EntityConfig(
-                hass, self.device_id, InventoryManagerEntityType.EMPTYPREDICTION
-            ),
-            InventoryManagerEntityType.WARNING: EntityConfig(
-                hass, self.device_id, InventoryManagerEntityType.WARNING
-            ),
+            entity_type: self._generate_entity_config(entity_type)
+            for entity_type in InventoryManagerEntityType
+        }
+
+    def _generate_entity_config(self, entity_type: InventoryManagerEntityType) -> dict:
+        if entity_type == InventoryManagerEntityType.EMPTYPREDICTION:
+            fmt = "sensor.{}"
+        elif entity_type == InventoryManagerEntityType.WARNING:
+            fmt = "binary_sensor.{}"
+        else:
+            fmt = "number.{}"
+
+        unique_id = self.device_id + UNDERSCORE + entity_type.name.lower()
+        return {
+            UNIQUE_ID: unique_id,
+            ENTITY_ID: generate_entity_id(fmt, unique_id, hass=self._hass),
+            ENTITY_TYPE: entity_type,
         }
 
     def take_dose(self, dose: InventoryManagerEntityType) -> None:

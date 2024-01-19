@@ -26,6 +26,11 @@ STRING_NOON_ENTITY = "noon_entity"
 STRING_EVENING_ENTITY = "evening_entity"
 STRING_NIGHT_ENTITY = "night_entity"
 
-NATIVE_VALUE = "native_value"
 SERVICE_AMOUNT = "amount"
 SERVICE_PREDEFINED_AMOUNT = "predefined-amount"
+SERVICE_AMOUNT_SPECIFICATION = "amount-specification"
+
+NATIVE_VALUE = "native_value"
+UNIQUE_ID = "unique_id"
+ENTITY_ID = "entity_id"
+ENTITY_TYPE = "entity_type"

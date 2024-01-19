@@ -7,8 +7,14 @@ from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
 from homeassistant.util.dt import now
 from homeassistant.helpers import entity_platform
 
-from . import EntityConfig, InventoryManagerItem, InventoryManagerEntityType
-from .const import ATTR_DAYS_REMAINING, DOMAIN, STRING_SENSOR_ENTITY
+from . import InventoryManagerItem, InventoryManagerEntityType
+from .const import (
+    ATTR_DAYS_REMAINING,
+    DOMAIN,
+    ENTITY_ID,
+    STRING_SENSOR_ENTITY,
+    UNIQUE_ID,
+)
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -42,16 +48,16 @@ class EmptyPredictionSensor(SensorEntity):
 
         self.item.entity[InventoryManagerEntityType.EMPTYPREDICTION] = self
 
-        entity_config: EntityConfig = item.entity_config[
+        entity_config: dict = item.entity_config[
             InventoryManagerEntityType.EMPTYPREDICTION
         ]
 
         self._device_id = item.device_id
         self._available = True
         self.device_info = item.device_info
-        self.unique_id = entity_config.unique_id
+        self.unique_id = entity_config[UNIQUE_ID]
         self.extra_state_attributes = {}
-        self.entity_id = entity_config.entity_id
+        self.entity_id = entity_config[ENTITY_ID]
         self.native_value: datetime = now() + timedelta(days=10000)
 
         self.device_class = SensorDeviceClass.TIMESTAMP

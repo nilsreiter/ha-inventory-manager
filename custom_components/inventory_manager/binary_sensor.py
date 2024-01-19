@@ -14,6 +14,8 @@ from .const import (
     CONF_SENSOR_BEFORE_EMPTY,
     DOMAIN,
     STRING_PROBLEM_ENTITY,
+    UNIQUE_ID,
+    ENTITY_ID,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -48,16 +50,16 @@ class WarnSensor(BinarySensorEntity):
 
         self.should_poll = False
         self.device_class = BinarySensorDeviceClass.PROBLEM
-        self.unique_id = item.entity_config[
-            InventoryManagerEntityType.WARNING
-        ].unique_id
+        self.unique_id = item.entity_config[InventoryManagerEntityType.WARNING][
+            UNIQUE_ID
+        ]
 
         self.translation_key = STRING_PROBLEM_ENTITY
         self.available = False
         self.is_on = False
-        self.entity_id = item.entity_config[
-            InventoryManagerEntityType.WARNING
-        ].entity_id
+        self.entity_id = item.entity_config[InventoryManagerEntityType.WARNING][
+            ENTITY_ID
+        ]
 
     def update(self):
         """Update the state of the entity."""

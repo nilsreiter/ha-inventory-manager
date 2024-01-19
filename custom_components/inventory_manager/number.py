@@ -11,11 +11,13 @@ from homeassistant.helpers import entity_platform
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from . import InventoryManagerItem, InventoryManagerEntityType, EntityConfig
+from . import InventoryManagerItem, InventoryManagerEntityType
 from .const import (
     DOMAIN,
+    ENTITY_ID,
     NATIVE_VALUE,
     SERVICE_AMOUNT,
+    SERVICE_AMOUNT_SPECIFICATION,
     SERVICE_CONSUME,
     SERVICE_PREDEFINED_AMOUNT,
     STRING_EVENING_ENTITY,
@@ -24,6 +26,7 @@ from .const import (
     STRING_NOON_ENTITY,
     STRING_SUPPLY_ENTITY,
     UNIT,
+    UNIQUE_ID,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -34,9 +37,13 @@ async def async_setup_entry(
     config_entry: config_entries.ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ):
+    """Set up number entities and register service."""
+
+    # Get the item object
     item: InventoryManagerItem = hass.data[DOMAIN][config_entry.entry_id]
 
-    sensors = [
+    # Create numeric entities
+    entities = [
         SupplyEntity(hass, item),
         ConsumptionEntity(hass, item, InventoryManagerEntityType.MORNING),
         ConsumptionEntity(hass, item, InventoryManagerEntityType.NOON),
@@ -44,8 +51,9 @@ async def async_setup_entry(
         ConsumptionEntity(hass, item, InventoryManagerEntityType.NIGHT),
     ]
 
-    async_add_entities(sensors, update_before_add=False)
+    async_add_entities(entities, update_before_add=False)
 
+    # Register service, if needed
     if not hass.services.has_service(DOMAIN, SERVICE_CONSUME):
         _LOGGER.debug("Registering service %s.%s", DOMAIN, SERVICE_CONSUME)
         platform = entity_platform.async_get_current_platform()
@@ -53,11 +61,12 @@ async def async_setup_entry(
         platform.async_register_entity_service(
             SERVICE_CONSUME,
             {
-                vol.Exclusive("amount", "amount-specification"): cv.Number,
-                vol.Exclusive("predefined-amount", "amount-specification"): cv.string,
+                vol.Exclusive(SERVICE_AMOUNT, SERVICE_AMOUNT_SPECIFICATION): cv.Number,
+                vol.Exclusive(
+                    SERVICE_PREDEFINED_AMOUNT, SERVICE_AMOUNT_SPECIFICATION
+                ): cv.string,
             },
-            lambda o1, o2: o1.take(o2),
-            required_features=[InventoryManagerEntityType.SUPPLY],
+            lambda target, payload: target.take(payload),
         )
 
 
@@ -79,15 +88,17 @@ class InventoryNumber(RestoreNumber, metaclass=ABCMeta):
         super().__init__()
         self.hass: core.HomeAssistant = hass
         self.item: InventoryManagerItem = item
-        self.entity_type: InventoryManagerEntityType = entity_type
-        self.item.entity[entity_type] = self
         self.device_info: DeviceInfo = item.device_info
+        self.entity_type: InventoryManagerEntityType = entity_type
 
-        entity_config: EntityConfig = item.entity_config[entity_type]
+        # register self with the item object
+        self.item.entity[entity_type] = self
+
+        entity_config: dict = item.entity_config[entity_type]
+        self.entity_id: str = entity_config[ENTITY_ID]
+        self.unique_id: str = entity_config[UNIQUE_ID]
+
         self._available: bool = True
-        self.entity_id: str = entity_config.entity_id
-        self.unique_id: str = entity_config.unique_id
-
         self.native_unit_of_measurement = UNIT
         self.native_step = 0.25
         self.native_min_value = 0
