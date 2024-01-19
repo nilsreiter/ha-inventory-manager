@@ -31,7 +31,7 @@ class InventoryManagerEntityType(IntFlag):
     NOON = 32
     EVENING = 64
     WARNING = 128
-    CONSUMPTION = 256
+    EMPTYPREDICTION = 256
 
 
 PLATFORMS: list[str] = [Platform.NUMBER, Platform.SENSOR, Platform.BINARY_SENSOR]
@@ -47,26 +47,17 @@ async def async_setup_entry(
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = item
 
     dr = device_registry.async_get(hass)
-
     friendly_name = entry.data[CONF_ITEM_NAME]
     if CONF_ITEM_SIZE in entry.data:
         friendly_name = friendly_name + SPACE + entry.data[CONF_ITEM_SIZE]
     dr.async_get_or_create(
         config_entry_id=entry.entry_id,
-        entry_type=DeviceEntryType.SERVICE,
-        manufacturer=entry.data.get(CONF_ITEM_VENDOR, None),
+        entry_type=item.device_info["entry_type"],
+        manufacturer=item.device_info["manufacturer"],
         model=friendly_name,
         name=friendly_name,
-        identifiers={
-            (
-                DOMAIN,
-                entry.data[CONF_ITEM_NAME].lower()
-                + "-"
-                + entry.data.get(CONF_ITEM_SIZE, "").lower(),
-            )
-        },
+        identifiers=item.device_info["identifiers"],
     )
-
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     return True
@@ -78,7 +69,7 @@ class EntityConfig:
     ) -> None:
         self.entity_type = t
 
-        if t == InventoryManagerEntityType.CONSUMPTION:
+        if t == InventoryManagerEntityType.EMPTYPREDICTION:
             fmt = "sensor.{}"
         elif t == InventoryManagerEntityType.WARNING:
             fmt = "binary_sensor.{}"
@@ -93,22 +84,22 @@ class EntityConfig:
 
 
 class InventoryManagerItem:
-    """Bla."""
+    """This class represents the item data itself."""
 
     def __init__(self, hass: core.HomeAssistant, d) -> None:
+        """Create a new item."""
         self._hass = hass
-        self._data = d
+        self.data = d
         self._numbers = {}
 
-        _LOGGER.debug(d)
         self.device_id = d[CONF_ITEM_NAME].lower()
         if CONF_ITEM_SIZE in d:
             self.device_id = self.device_id + "-" + d[CONF_ITEM_SIZE].lower()
-        self.name = (
-            self._data[CONF_ITEM_NAME] + " " + self._data.get(CONF_ITEM_SIZE, "")
-        )
+        self.name = self.data[CONF_ITEM_NAME] + " " + self.data.get(CONF_ITEM_SIZE, "")
         self.device_info: DeviceInfo = DeviceInfo(
             identifiers={(DOMAIN, self.device_id)},
+            manufacturer=d.get(CONF_ITEM_VENDOR, None),
+            entry_type=DeviceEntryType.SERVICE,
             name=self.name,
         )
         self.entity = {}
@@ -128,16 +119,13 @@ class InventoryManagerItem:
             InventoryManagerEntityType.NIGHT: EntityConfig(
                 hass, self.device_id, InventoryManagerEntityType.NIGHT
             ),
-            InventoryManagerEntityType.CONSUMPTION: EntityConfig(
-                hass, self.device_id, InventoryManagerEntityType.CONSUMPTION
+            InventoryManagerEntityType.EMPTYPREDICTION: EntityConfig(
+                hass, self.device_id, InventoryManagerEntityType.EMPTYPREDICTION
             ),
             InventoryManagerEntityType.WARNING: EntityConfig(
                 hass, self.device_id, InventoryManagerEntityType.WARNING
             ),
         }
-
-    def d(self):
-        return self._data
 
     def take_dose(self, dose: InventoryManagerEntityType) -> None:
         if dose not in [
@@ -165,7 +153,7 @@ class InventoryManagerItem:
             self._numbers[spec] = val
 
         for et in [
-            InventoryManagerEntityType.CONSUMPTION,
+            InventoryManagerEntityType.EMPTYPREDICTION,
             InventoryManagerEntityType.WARNING,
         ]:
             if et in self.entity and self.entity[et] is not None:

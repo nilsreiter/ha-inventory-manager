@@ -22,11 +22,11 @@ async def async_setup_entry(
     """Set up sensors from a config entry created in the integrations UI."""
 
     config = hass.data[DOMAIN][config_entry.entry_id]
-    sensors = [ConsumptionSensor(hass, config)]
+    sensors = [EmptyPredictionSensor(hass, config)]
     async_add_entities(sensors, update_before_add=True)
 
 
-class ConsumptionSensor(SensorEntity):
+class EmptyPredictionSensor(SensorEntity):
     _attr_has_entity_name = True
     _attr_name = "Supply empty"
 
@@ -40,10 +40,10 @@ class ConsumptionSensor(SensorEntity):
         self.item = item
         self.platform = entity_platform.async_get_current_platform()
 
-        self.item.entity[InventoryManagerEntityType.CONSUMPTION] = self
+        self.item.entity[InventoryManagerEntityType.EMPTYPREDICTION] = self
 
         entity_config: EntityConfig = item.entity_config[
-            InventoryManagerEntityType.CONSUMPTION
+            InventoryManagerEntityType.EMPTYPREDICTION
         ]
 
         self._device_id = item.device_id

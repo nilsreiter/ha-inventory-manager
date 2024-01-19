@@ -9,6 +9,5 @@
   "documentation": "https://github.com/nilsreiter/ha-inventory-manager",
   "iot_class": "calculated",
   "requirements": [],
-  "version": "1.0.0",
-  "integration_type": "service"
+  "version": "1.0.0"
 }

@@ -1,19 +1,16 @@
 import logging
+from abc import ABCMeta
 
 import voluptuous as vol
 
-from typing import Any
 
 from homeassistant import config_entries, core
 from homeassistant.components.number import RestoreNumber
-from homeassistant.components.light import LightEntityFeature
 from homeassistant.const import EntityCategory
 from homeassistant.helpers import entity_platform
 import homeassistant.helpers.config_validation as cv
-from homeassistant.helpers.entity import DeviceInfo, generate_entity_id
+from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.event import async_track_state_change_event
-from homeassistant.components.input_number import InputNumber
 from . import InventoryManagerItem, InventoryManagerEntityType, EntityConfig
 from .const import (
     DOMAIN,
@@ -64,8 +61,11 @@ async def async_setup_entry(
         )
 
 
-class InventoryNumber(RestoreNumber):
-    """Represents a numeric entity."""
+class InventoryNumber(RestoreNumber, metaclass=ABCMeta):
+    """Represents a numeric entity.
+
+    Abstract base class for several entities.
+    """
 
     _attr_has_entity_name = True
 
@@ -75,12 +75,13 @@ class InventoryNumber(RestoreNumber):
         item: InventoryManagerItem,
         entity_type: InventoryManagerEntityType,
     ) -> None:
+        """Create a new number entity."""
         super().__init__()
         self.hass: core.HomeAssistant = hass
         self.item: InventoryManagerItem = item
         self.entity_type: InventoryManagerEntityType = entity_type
         self.item.entity[entity_type] = self
-        self.device_info = item.device_info
+        self.device_info: DeviceInfo = item.device_info
 
         entity_config: EntityConfig = item.entity_config[entity_type]
         self._available: bool = True
@@ -93,6 +94,7 @@ class InventoryNumber(RestoreNumber):
 
     @property
     def native_value(self) -> float:
+        """The native value."""
         return self.item.get(self.entity_type)
 
     @native_value.setter
@@ -101,9 +103,11 @@ class InventoryNumber(RestoreNumber):
         self.item.set(self.entity_type, value)
 
     def set_native_value(self, value: float) -> None:
+        """Set the native value."""
         self.native_value = value
 
     async def async_added_to_hass(self):
+        """Restore the number from last time."""
         try:
             last_data = await self.async_get_last_number_data()
             if last_data is not None:
@@ -117,6 +121,7 @@ class InventoryNumber(RestoreNumber):
 
     @property
     def translation_key(self) -> str:
+        """Return the translation key."""
         if self.entity_type == InventoryManagerEntityType.MORNING:
             return STRING_MORNING_ENTITY
         elif self.entity_type == InventoryManagerEntityType.NOON:
@@ -138,6 +143,7 @@ class ConsumptionEntity(InventoryNumber):
         config: InventoryManagerItem,
         time: InventoryManagerEntityType,
     ) -> None:
+        """Create a new consumption entity."""
         super().__init__(hass, config, time)
         self.native_max_value = 5.0
         self.icon = "mdi:pill-multiple"
@@ -148,6 +154,7 @@ class SupplyEntity(InventoryNumber):
     """Represents the supply of the current item."""
 
     def __init__(self, hass: core.HomeAssistant, pill) -> None:
+        """Create a new suppy entity."""
         _LOGGER.debug("Initializing SupplyEntity")
         super().__init__(hass, pill, InventoryManagerEntityType.SUPPLY)
         self.native_max_value = 1000000
@@ -155,6 +162,11 @@ class SupplyEntity(InventoryNumber):
 
     @property
     def supported_features(self):
+        """Return 4.
+
+        This is a hack, because apparently custom features are not possible.
+        This is only used to allow restriction of target entity in service call.
+        """
         return 4  # LightEntityFeature.EFFECT
 
     def take(self, call: core.ServiceCall):
