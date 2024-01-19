@@ -1,16 +1,14 @@
 import logging
 
 from datetime import datetime, timedelta
-from typing import Any
 
 from homeassistant import config_entries, core
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
-from homeassistant.helpers.entity import DeviceInfo, generate_entity_id
-from homeassistant.helpers.event import async_track_state_change_event
 from homeassistant.util.dt import now
+from homeassistant.helpers import entity_platform
 
-from . import InventoryManagerConfig, InventoryManagerEntityType
-from .const import ATTR_DAILY, ATTR_DAYS_REMAINING, DOMAIN, STRING_SENSOR_ENTITY
+from . import EntityConfig, InventoryManagerItem, InventoryManagerEntityType
+from .const import ATTR_DAYS_REMAINING, DOMAIN, STRING_SENSOR_ENTITY
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -21,7 +19,8 @@ async def async_setup_entry(
     config_entry: config_entries.ConfigEntry,
     async_add_entities,
 ):
-    """Setup sensors from a config entry created in the integrations UI."""
+    """Set up sensors from a config entry created in the integrations UI."""
+
     config = hass.data[DOMAIN][config_entry.entry_id]
     sensors = [ConsumptionSensor(hass, config)]
     async_add_entities(sensors, update_before_add=True)
@@ -29,108 +28,43 @@ async def async_setup_entry(
 
 class ConsumptionSensor(SensorEntity):
     _attr_has_entity_name = True
+    _attr_name = "Supply empty"
 
-    def __init__(
-        self, hass: core.HomeAssistant, config: InventoryManagerConfig
-    ) -> None:
-        super().__init__()
+    should_poll = False
+    device_class = SensorDeviceClass.TIMESTAMP
+
+    def __init__(self, hass: core.HomeAssistant, item: InventoryManagerItem) -> None:
         _LOGGER.debug("Initializing ConsumptionSensor")
 
-        self._config = config
+        self.hass = hass
+        self.item = item
+        self.platform = entity_platform.async_get_current_platform()
 
-        self._device_id = config.device_id
+        self.item.entity[InventoryManagerEntityType.CONSUMPTION] = self
+
+        entity_config: EntityConfig = item.entity_config[
+            InventoryManagerEntityType.CONSUMPTION
+        ]
+
+        self._device_id = item.device_id
         self._available = True
-        self._device_info: DeviceInfo = DeviceInfo(
-            identifiers={(DOMAIN, self._device_id)},
-            name=config.name,
-        )
-        self.unique_id = config.entity_config[
-            InventoryManagerEntityType.CONSUMPTION
-        ].unique_id
-        self.attrs = {}
-        self.entity_id = config.entity_config[
-            InventoryManagerEntityType.CONSUMPTION
-        ].entity_id
+        self.device_info = item.device_info
+        self.unique_id = entity_config.unique_id
+        self.extra_state_attributes = {}
+        self.entity_id = entity_config.entity_id
         self.native_value: datetime = now() + timedelta(days=10000)
-        self._unsub = async_track_state_change_event(
-            hass,
-            [
-                config.entity_config[numberEntity].entity_id
-                for numberEntity in [
-                    InventoryManagerEntityType.SUPPLY,
-                    InventoryManagerEntityType.MORNING,
-                    InventoryManagerEntityType.NOON,
-                    InventoryManagerEntityType.EVENING,
-                    InventoryManagerEntityType.NIGHT,
-                ]
-            ],
-            self.schedule_update_ha_state,
-        )
 
-    @property
-    def should_poll(self):
-        return False
-
-    @property
-    def device_class(self):
-        return SensorDeviceClass.TIMESTAMP
-
-    @property
-    def translation_key(self) -> str | None:
-        return STRING_SENSOR_ENTITY
-
-    def daily_consumption(self) -> float:
-        """Calculate the daily consumption."""
-        try:
-            s = sum(
-                float(
-                    self.hass.states.get(
-                        self._config.entity_config[entity_type].entity_id
-                    ).state
-                )
-                for entity_type in [
-                    InventoryManagerEntityType.MORNING,
-                    InventoryManagerEntityType.NOON,
-                    InventoryManagerEntityType.EVENING,
-                    InventoryManagerEntityType.NIGHT,
-                ]
-            )
-
-            return s
-        except (KeyError, AttributeError):
-            return 0
+        self.device_class = SensorDeviceClass.TIMESTAMP
+        self.translation_key = STRING_SENSOR_ENTITY
 
     def update(self):
         """Recalculate the remaining time until supply is empty."""
         _LOGGER.debug("Updating sensor")
 
-        daily = self.daily_consumption()
-        _LOGGER.debug(daily)
-
-        supply_state = self.hass.states.get(
-            self._config.entity_config[InventoryManagerEntityType.SUPPLY].entity_id
+        self.extra_state_attributes[ATTR_DAYS_REMAINING] = self.item.days_remaining()
+        self.native_value = now() + timedelta(days=self.item.days_remaining())
+        _LOGGER.debug(
+            "Setting native value of %s to %s", self.entity_id, self.native_value
         )
-        if supply_state is None:
-            self.available = False
-            return
-        if supply_state.state == "unavailable":
-            self.available = False
-            return
-        supply = float(supply_state.state)
-        self.attrs[ATTR_DAILY] = daily
-        if daily > 0:
-            days_remaining = supply / daily
-        else:
-            days_remaining = 10000
-        self.attrs[ATTR_DAYS_REMAINING] = days_remaining
-        self.native_value = now() + timedelta(days=days_remaining)
         self.available = True
-
-    @property
-    def extra_state_attributes(self) -> dict[str, Any]:
-        return self.attrs
-
-    @property
-    def device_info(self) -> DeviceInfo:
-        """Return the device info."""
-        return self._device_info
+        self.schedule_update_ha_state()

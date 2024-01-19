@@ -3,7 +3,9 @@ consume:
   target:
     entity:
       domain: number
-      integration: inventory_manager
+      supported_features:
+        - inventory_manager.InventoryManagerEntityType.SUPPLY
+
   fields:
     amount:
       name: Amount
@@ -19,28 +21,3 @@ consume:
             - "noon"
             - "evening"
             - "night"
-consume_e:
-  name: Consume
-  target:
-    entity:
-      domain: number
-      integration: inventory_manager
-  fields:
-    amount:
-      name: Amount
-      selector:
-        number:
-    predefined-amount:
-      name: Predefined Amount
-      selector:
-        select:
-          translation_key: "time"
-          options:
-            - "morning"
-            - "noon"
-            - "evening"
-            - "night"
-
-
-
-

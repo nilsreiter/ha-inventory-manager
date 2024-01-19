@@ -38,7 +38,7 @@
       }
     },
     "binary_sensor": {
-      "binary_sensor": {
+      "problem_entity": {
         "name": "Bald leer"
       }
     },

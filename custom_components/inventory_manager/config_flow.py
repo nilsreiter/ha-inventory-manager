@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Optional
+from typing import Any
 
 import voluptuous as vol
 
@@ -8,9 +8,9 @@ import homeassistant.helpers.config_validation as cv
 
 from .const import (
     CONF_PILL_AGENT,
-    CONF_PILL_NAME,
-    CONF_PILL_SIZE,
-    CONF_PILL_VENDOR,
+    CONF_ITEM_NAME,
+    CONF_ITEM_SIZE,
+    CONF_ITEM_VENDOR,
     CONF_SENSOR_BEFORE_EMPTY,
     DOMAIN,
 )
@@ -19,10 +19,10 @@ _LOGGER = logging.getLogger(__name__)
 
 PILL_SCHEMA = vol.Schema(
     {
-        vol.Required(CONF_PILL_NAME): cv.string,
-        vol.Optional(CONF_PILL_SIZE): cv.string,
+        vol.Required(CONF_ITEM_NAME): cv.string,
+        vol.Optional(CONF_ITEM_SIZE): cv.string,
         vol.Optional(CONF_PILL_AGENT): cv.string,
-        vol.Optional(CONF_PILL_VENDOR): cv.string,
+        vol.Optional(CONF_ITEM_VENDOR): cv.string,
         vol.Required(CONF_SENSOR_BEFORE_EMPTY, default=10): cv.positive_int,
     }
 )
@@ -34,9 +34,9 @@ class InventoryConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
     MINOR_VERSION = 1
 
-    data: Optional[dict[str, Any]]
+    data: dict[str, Any] | None
 
-    async def async_step_user(self, user_input: Optional[dict[str, Any]] = None):
+    async def async_step_user(self, user_input: dict[str, Any] | None = None):
         """Bla."""
 
         errors: dict[str, str] = {}
@@ -44,9 +44,9 @@ class InventoryConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             # Input is valid, set data.
             self.data = user_input
             # Return the form of the next step.
-            title = self.data[CONF_PILL_NAME]
-            if CONF_PILL_SIZE in self.data:
-                title += " " + self.data.get(CONF_PILL_SIZE, "")
+            title = self.data[CONF_ITEM_NAME]
+            if CONF_ITEM_SIZE in self.data:
+                title += " " + self.data.get(CONF_ITEM_SIZE, "")
             return self.async_create_entry(
                 title=title,
                 data=self.data,
