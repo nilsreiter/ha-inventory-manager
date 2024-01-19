@@ -8,9 +8,9 @@
     "step": {
       "user": {
         "data": {
-          "pill_name": "Pill name",
-          "pill_size": "Agent weight",
-          "pill_vendor": "Vendor"
+          "item_name": "Pill name",
+          "item_size": "Agent weight",
+          "item_vendor": "Vendor"
         },
         "description": "Add the name of the pill",
         "title": "Add Details"
@@ -37,7 +37,7 @@
     },
     "binary_sensor": {
       "problem_entity": {
-        "name": "Soon empty"
+        "name": "Predicted empty"
       }
     },
     "sensor": {

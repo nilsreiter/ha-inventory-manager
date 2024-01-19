@@ -6,6 +6,7 @@ from typing import Any
 
 from homeassistant import config_entries, core
 from homeassistant.components.number import RestoreNumber
+from homeassistant.components.light import LightEntityFeature
 from homeassistant.const import EntityCategory
 from homeassistant.helpers import entity_platform
 import homeassistant.helpers.config_validation as cv
@@ -59,6 +60,7 @@ async def async_setup_entry(
                 vol.Exclusive("predefined-amount", "amount-specification"): cv.string,
             },
             lambda o1, o2: o1.take(o2),
+            required_features=[InventoryManagerEntityType.SUPPLY],
         )
 
 
@@ -152,10 +154,11 @@ class SupplyEntity(InventoryNumber):
         self.icon = "mdi:medication"
 
     @property
-    def supported_features(self) -> InventoryManagerEntityType:
-        return InventoryManagerEntityType.SUPPLY
+    def supported_features(self):
+        return 4  # LightEntityFeature.EFFECT
 
     def take(self, call: core.ServiceCall):
+        """Execute the consume service call."""
         if SERVICE_PREDEFINED_AMOUNT in call.data:
             _LOGGER.debug(
                 "Calling service 'consume' with predefined amount %s",

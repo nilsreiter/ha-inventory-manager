@@ -3,8 +3,9 @@ consume:
   target:
     entity:
       domain: number
+      integration: inventory_manager
       supported_features:
-        - inventory_manager.InventoryManagerEntityType.SUPPLY
+        - light.LightEntityFeature.EFFECT
 
   fields:
     amount:

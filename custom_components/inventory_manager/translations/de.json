@@ -8,11 +8,11 @@
     "step": {
       "user": {
         "data": {
-          "pill_name": "Name der Tablette",
-          "pill_size": "Menge des Wirkstoffs (mg)",
-          "pill_agent": "Wirkstoff",
-          "pill_vendor": "Hersteller",
-          "pill_warning_days_before_empty": "Wie viele Tage vor leerem Bestand warnen?"
+          "item_name": "Name der Tablette",
+          "item_size": "Menge des Wirkstoffs (mg)",
+          "item_agent": "Wirkstoff",
+          "item_vendor": "Hersteller",
+          "warning_days_before_empty": "Wie viele Tage vor leerem Bestand warnen?"
         },
         "description": "Tablette beschreiben",
         "title": "Details ergänzen"
