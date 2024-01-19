@@ -37,12 +37,12 @@
     },
     "binary_sensor": {
       "problem_entity": {
-        "name": "Predicted empty"
+        "name": "Empty"
       }
     },
     "sensor": {
       "sensor_entity": {
-        "name": "Spent"
+        "name": "Predicted empty"
       }
     }
   }

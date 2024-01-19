@@ -39,7 +39,7 @@
     },
     "binary_sensor": {
       "problem_entity": {
-        "name": "Bald leer"
+        "name": "Geht zur Neige"
       }
     },
     "sensor": {
