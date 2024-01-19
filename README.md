@@ -1,50 +1,72 @@
-# Pills for Home Assistant
+# Track Supply of Specific Things in Home Assistant
 
-Take stock of your dogs medicinal supplies.
+This integration is for tracking specific items in your household.
 
-Key ideas:
-
-- The component is added once for each tablet type 
-- Each tablet type is represented as a service/device and offers multiple entities
-- Supply: How many pieces of the tablet type we have left (entity type `number`)
-- Morning/Noon/Evening/Night: How many pieces need to be taken (settable in steps of 0.25)? (four entities of type `number`)
-- Empty: When will the supply be empty? (sensor of device class `timestamp`)
+- The component is added once for each item (e.g., dishwasher tabs)
+- Each item is represented as a service/device and offers multiple entities
+- Supply: How many pieces of the item we have left (entity type `number`)
+- Morning/Noon/Evening/Night: How many pieces are regularly consumed (settable in steps of 0.25)? (four entities of type `number`)
+- Empty: When do we predict the supply to be empty? (sensor of device class `timestamp`)
 - Soon empty: Do we have to act? (binary sensor of device class `problem`)
-- The component adds a service that can be called in the morning, noon, evening and night. This service reduces the number of tablets left by the specified amount (this could be run as an automation)
+- The integration adds a service that can be called regularly (e.g., in the morning) or when specific things happen. This service reduces the number of items left by the specified amount (this should be run as an automation).
 
+## Use Cases
 
-![](img/screenshot-device.png)
+I have devloped this integration with two use cases in mind:
+
+- Track medicine for our dog. Unfortunately, our [dog](img/bona.jpeg) is pretty sick, which means we have to regularly feed her several pills. The integration service is called every morning and evening, and we get a prediction on when it is time to get new supplies. ![](img/screenshot1.png)
+
+- Track dishwasher tabs. Every time the dishwasher starts (tracked via power consumption), our supply of dishwasher tabs is reduced by one. To predict when we run out, we assume that we run it 0.5 times every day.
 
 ## Installation
 
 ## Description
 
-The integration provides several entities to track the state and supply levels of tablets. For each tablet type, the component stores the number of tablets we have (typically printed on the box), together with the prescribed doses in the morning, at noon, in the evening and at night. Based on this information, we can predict when we run out of tablets -- this is the state of the main sensor. A second "problem sensor" can signal the need to go to the vet before we run out of tablets.
+The integration provides several entities to track the state and supply levels of things. For each thing, the component stores the number of things we have, together with the prescribed use in the morning, at noon, in the evening and at night. Based on this information, the component predicts when we run out -- this is the state of the main sensor. A second "problem sensor" can signal the need to buy new things before we run out (by default, the sensor signals a problem 10 days before we run out).
 
-To make this really useful, the component adds a new service call `pills.take_pills`, which can be called to signal that the correct amount of tablets has been taken. This leads to an update of the supply levels of each consumed pill type.
+To make this really useful, the component adds a service call `inventory_manager.consume`, which can be called to signal that a certain amount of things has been consumed. This updates the supply levels of each consumed thing type.
+
+```yaml
+service: inventory_manager.consume
+data:
+  amount: 1
+target:
+  entity_id: number.dishwasher_tab_supply
+```
+
+It is also possible to consume multiple things at once, and for each thing we consume the predefined amount of things (i.e. if 0.5 pills of one type and 1.5 pills of another type has to be taken):
+
+```yaml
+service: inventory_manager.consume
+data:
+  predefined-amount: evening
+target:
+  entity_id:
+    - number.vetmedin_5mg_supply
+    - number.vetoryl_30mg_supply
+```
 
 ## Back story
 
 ![](img/bona.jpeg)
 
-This is Bona, our 12 year old dog. Bona is an awesome dog, but unfortunately not very healthy. Thus, we feed her an increasing set of tablets every morning and every evening. Shortly after having started with Home Assistant, I started playing around with ways to track the inventory of Bonas tablets -- in order to timely get new tablets when the old packages get empty. 
+This is Bona, our 12 year old dog. Bona is an awesome dog, but unfortunately not very healthy. Thus, we feed her an increasing set of tablets every morning and every evening. Shortly after having started with Home Assistant, I started playing around with ways to track the inventory of Bonas tablets -- in order to timely get new tablets when the old packages get empty.
 
-This essentially can be done with template entities, but it's cumbersome. 
+This essentially can be done with template entities, but it's cumbersome.
 
 ```yaml
-      - unique_id: pills_vetoryl_10mg_daily
-        state: >-
-          {{ states('input_number.bona_pill_vetoryl10_pro_tag_morgens')|float + states('input_number.bona_pill_vetoryl10_pro_tag_mittags')|float + states('input_number.bona_pill_vetoryl10_pro_tag_abends')|float }}
-      - unique_id: pills_vetoryl_10mg_vorrat
-        device_class: timestamp
-        state: >-
-          {% from 'bona_pills.jinja' import predict_pills_state %}
-          {{ predict_pills_state("input_number.bona_pill_vetoryl10", "sensor.template_pills_vetoryl_10mg_daily") }}
-        attributes:
-          remaining_days: >-
-            {% from 'bona_pills.jinja' import predict_pills_remaining_days %}
-            {{ predict_pills_remaining_days("input_number.bona_pill_vetoryl10", "sensor.template_pills_vetoryl_10mg_daily") }}
-
+- unique_id: pills_vetoryl_10mg_daily
+  state: >-
+    {{ states('input_number.bona_pill_vetoryl10_pro_tag_morgens')|float + states('input_number.bona_pill_vetoryl10_pro_tag_mittags')|float + states('input_number.bona_pill_vetoryl10_pro_tag_abends')|float }}
+- unique_id: pills_vetoryl_10mg_vorrat
+  device_class: timestamp
+  state: >-
+    {% from 'bona_pills.jinja' import predict_pills_state %}
+    {{ predict_pills_state("input_number.bona_pill_vetoryl10", "sensor.template_pills_vetoryl_10mg_daily") }}
+  attributes:
+    remaining_days: >-
+      {% from 'bona_pills.jinja' import predict_pills_remaining_days %}
+      {{ predict_pills_remaining_days("input_number.bona_pill_vetoryl10", "sensor.template_pills_vetoryl_10mg_daily") }}
 ```
 
 This is an excerpt of my `templates.yaml` file, making use of [custom templates, introduced in 2023.4](https://www.home-assistant.io/blog/2023/04/05/release-20234/). The first entity `pills_vetoryl_10mg_daily` calculates the total daily consumption of a specific tablet type, while the second `pills_vetoryl_10mg_vorrat` predicts when this pill type will be gone.
@@ -52,51 +74,3 @@ This is an excerpt of my `templates.yaml` file, making use of [custom templates,
 In addition to these two template entities (for no less than six different tablet types), this requires `input_number` entities for morning, evening and noon, because -- of course -- the dog gets a different combination of tablets every time (and this also changes from time to time).
 
 Because this is very repetitive and makes all my files unreadable, I created this custom component (also, to find out if I could, and because it was fun).
-
-## Helpful Templates
-
-My setup uses the following templates:
-
-### Generate a report on the supply levels
-
-```jinja2
-{# Get a list of all entities provided by the component #}
-{%- set pill_entities = integration_entities('pills') %}
-
-{# Print those (in a markdown list) that represent the supply level #}
-{%- for p in pill_entities %}
-{%- if p.startswith('number') and p.endswith('supply') -%}
-
-- {{ device_attr(p, 'name') }}: Noch {{ states(p) }} Stück
-{% endif -%}
-{% endfor %}
-```
-
-### Generate a list of tablet doses for each time slot
-
-```jinja2
-{# Get a list of all entities provided by the component #}
-{%- set pill_entities = integration_entities('pills') %}
-
-{# Set the time key according to the current time #}
-{# Adapt to your schedule if needed, in particular the hours #}
-{%- if (now().hour < 11) %}
-{%- set time_key = "morning" %}
-{%- elif (now().hour < 15) %}
-{%- set time_key = "noon" %}
-{%- elif (now().hour < 21) %}
-{%- set time_key = "evening" %}
-{%- else %}
-{%- set time_key = "night" %}
-{%- endif %}
-
-{# Iterate over all entities #}
-{%- for p in pill_entities %}
-
-{# Print the ones matching the current time #}
-{%- if p.startswith('number') and p.endswith(time_key) -%}
-- {{ device_attr(p, 'name') }}: {{ states(p) }} Stück
-{% endif -%}
-
-{% endfor %}
-```
