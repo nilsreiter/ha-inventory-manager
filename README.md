@@ -20,6 +20,8 @@ I have devloped this integration with two use cases in mind:
 
 ## Installation
 
+This integration is easiest to install via [HACS](https://hacs.xyz). At this moment, you'll have to add `https://github.com/nilsreiter/ha-inventory-manager` as a custom repository though. To do this, follow [this guide](https://hacs.xyz/docs/faq/custom_repositories).
+
 ## Description
 
 The integration provides several entities to track the state and supply levels of things. For each thing, the component stores the number of things we have, together with the prescribed use in the morning, at noon, in the evening and at night. Based on this information, the component predicts when we run out -- this is the state of the main sensor. A second "problem sensor" can signal the need to buy new things before we run out (by default, the sensor signals a problem 10 days before we run out).
