@@ -33,6 +33,16 @@
       }
     }
   },
+  "selector": {
+    "time": {
+      "options": {
+        "morning": "Morning",
+        "noon": "Noon",
+        "evening": "Evening",
+        "night": "Night"
+      }
+    }
+  },
   "entity": {
     "number": {
       "supply_entity": {

@@ -19,6 +19,16 @@
       }
     }
   },
+  "selector": {
+    "time": {
+      "options": {
+        "morning": "Morgens",
+        "noon": "Mittags",
+        "evening": "Abends",
+        "night": "Nachts"
+      }
+    }
+  },
   "entity": {
     "number": {
       "supply_entity": {

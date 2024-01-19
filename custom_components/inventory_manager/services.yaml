@@ -13,7 +13,7 @@ consume:
     predefined-amount:
       selector:
         select:
-          translation_key: "time"
+          translation_key: time
           options:
             - "morning"
             - "noon"
