@@ -1,3 +1,7 @@
+"""Sensor platform for inventory manager.
+
+The sensor predicts when we run out of supplies.
+"""
 import logging
 
 from datetime import datetime, timedelta
@@ -33,6 +37,8 @@ async def async_setup_entry(
 
 
 class EmptyPredictionSensor(SensorEntity):
+    """Represents a sensor to predict when we run out of supplies, given our daily consumption."""
+
     _attr_has_entity_name = True
     _attr_name = "Supply empty"
 
@@ -40,6 +46,7 @@ class EmptyPredictionSensor(SensorEntity):
     device_class = SensorDeviceClass.TIMESTAMP
 
     def __init__(self, hass: core.HomeAssistant, item: InventoryManagerItem) -> None:
+        """Construct a new EmptyPredictionSensor."""
         _LOGGER.debug("Initializing ConsumptionSensor")
 
         self.hass = hass
