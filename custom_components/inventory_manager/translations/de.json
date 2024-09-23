@@ -32,7 +32,12 @@
   "entity": {
     "number": {
       "supply_entity": {
-        "name": "Vorrat"
+        "name": "Vorrat",
+        "state_attributes": {
+          "unit": {
+            "pcs.": "Stk."
+          }
+        }
       },
       "morning_entity": {
         "name": "Morgens"
