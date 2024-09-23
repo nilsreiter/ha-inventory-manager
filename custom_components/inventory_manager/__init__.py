@@ -11,8 +11,6 @@ from homeassistant.helpers.device_registry import DeviceEntryType
 from homeassistant.helpers.entity import DeviceInfo
 from .const import (
     CONF_ITEM_NAME,
-    CONF_ITEM_UNIT,
-    CONF_ITEM_MAX_CONSUMPTION,
     CONF_ITEM_SIZE,
     CONF_ITEM_VENDOR,
     DOMAIN,
@@ -109,6 +107,7 @@ class InventoryManagerItem:
         }
 
     def take_dose(self, dose: InventoryManagerEntityType) -> None:
+        """Consume one dose."""
         if dose not in [
             InventoryManagerEntityType.MORNING,
             InventoryManagerEntityType.NOON,
@@ -121,6 +120,7 @@ class InventoryManagerItem:
         self.take_number(amount)
 
     def take_number(self, number: int) -> None:
+        """Consume specified number."""
         if number != 0:
             self.set(
                 InventoryManagerEntityType.SUPPLY,
@@ -128,6 +128,7 @@ class InventoryManagerItem:
             )
 
     def set(self, spec: InventoryManagerEntityType, val: float) -> None:
+        """Set one number."""
         if val < 0:
             self._numbers[spec] = 0.0
         else:
@@ -143,9 +144,11 @@ class InventoryManagerItem:
                 _LOGGER.debug("%s cannot be updated yet", et)
 
     def get(self, entity_type: InventoryManagerEntityType) -> float:
+        """Get number."""
         return self._numbers.setdefault(entity_type, 0)
 
     def days_remaining(self) -> float:
+        """Calculate days remaining."""
         supply = self.get(InventoryManagerEntityType.SUPPLY)
         daily = self.daily_consumption()
         if daily > 0:
