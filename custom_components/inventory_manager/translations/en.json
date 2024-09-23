@@ -10,7 +10,9 @@
         "data": {
           "item_name": "Object name",
           "item_size": "Agent weight or size",
+          "item_unit": "Unit (e.g., g)",
           "item_agent": "Agent name",
+          "item_max_consumption": "Maximal consumption",
           "item_vendor": "Vendor",
           "warning_days_before_empty": "Advanced warning in days"
 

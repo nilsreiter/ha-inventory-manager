@@ -11,6 +11,8 @@ from homeassistant.helpers.device_registry import DeviceEntryType
 from homeassistant.helpers.entity import DeviceInfo
 from .const import (
     CONF_ITEM_NAME,
+    CONF_ITEM_UNIT,
+    CONF_ITEM_MAX_CONSUMPTION,
     CONF_ITEM_SIZE,
     CONF_ITEM_VENDOR,
     DOMAIN,

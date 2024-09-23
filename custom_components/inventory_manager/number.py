@@ -16,6 +16,8 @@ from .const import (
     DOMAIN,
     ENTITY_ID,
     NATIVE_VALUE,
+    CONF_ITEM_MAX_CONSUMPTION,
+    CONF_ITEM_UNIT,
     SERVICE_AMOUNT,
     SERVICE_AMOUNT_SPECIFICATION,
     SERVICE_CONSUME,
@@ -25,7 +27,7 @@ from .const import (
     STRING_NIGHT_ENTITY,
     STRING_NOON_ENTITY,
     STRING_SUPPLY_ENTITY,
-    UNIT,
+    UNIT_PCS,
     UNIQUE_ID,
 )
 
@@ -99,7 +101,7 @@ class InventoryNumber(RestoreNumber, metaclass=ABCMeta):
         self.unique_id: str = entity_config[UNIQUE_ID]
 
         self._available: bool = True
-        self.native_unit_of_measurement = UNIT
+        self.native_unit_of_measurement = item.data.get(CONF_ITEM_UNIT, UNIT_PCS)
         self.native_step = 0.25
         self.native_min_value = 0
 
@@ -156,7 +158,7 @@ class ConsumptionEntity(InventoryNumber):
     ) -> None:
         """Create a new consumption entity."""
         super().__init__(hass, config, time)
-        self.native_max_value = 5.0
+        self.native_max_value = float(config.data.get(CONF_ITEM_MAX_CONSUMPTION, 5))
         self.icon = "mdi:pill-multiple"
         self.entity_category = EntityCategory.CONFIG
 
