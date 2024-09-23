@@ -1,3 +1,4 @@
+"""Number entities for inventory manager."""
 import logging
 from abc import ABCMeta
 

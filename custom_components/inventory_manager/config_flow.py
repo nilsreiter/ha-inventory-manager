@@ -1,3 +1,4 @@
+"""config flow for inventory manager."""
 import logging
 from typing import Any
 

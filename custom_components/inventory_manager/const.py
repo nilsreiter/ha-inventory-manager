@@ -1,3 +1,4 @@
+"""constants for inventory manager."""
 DOMAIN = "inventory_manager"
 
 UNDERSCORE = "_"
