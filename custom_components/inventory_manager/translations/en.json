@@ -8,11 +8,14 @@
     "step": {
       "user": {
         "data": {
-          "item_name": "Pill name",
-          "item_size": "Agent weight",
-          "item_vendor": "Vendor"
+          "item_name": "Object name",
+          "item_size": "Agent weight or size",
+          "item_agent": "Agent name",
+          "item_vendor": "Vendor",
+          "warning_days_before_empty": "Advanced warning in days"
+
         },
-        "description": "Add the name of the pill",
+        "description": "Describe the object",
         "title": "Add Details"
       }
     }
