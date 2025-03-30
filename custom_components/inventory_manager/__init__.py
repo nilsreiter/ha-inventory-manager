@@ -10,9 +10,12 @@ from homeassistant.helpers.entity import generate_entity_id
 from homeassistant.helpers.device_registry import DeviceEntryType
 from homeassistant.helpers.entity import DeviceInfo
 from .const import (
+    CONF_SENSOR_BEFORE_EMPTY,
     CONF_ITEM_NAME,
+    CONF_ITEM_MAX_CONSUMPTION,
     CONF_ITEM_SIZE,
     CONF_ITEM_VENDOR,
+    CONF_ITEM_UNIT,
     DOMAIN,
     ENTITY_ID,
     ENTITY_TYPE,
@@ -35,6 +38,8 @@ class InventoryManagerEntityType(IntFlag):
     EVENING = 64
     WARNING = 128
     EMPTYPREDICTION = 256
+    WEEK = 512
+    MONTH = 1024
 
 
 PLATFORMS: list[str] = [Platform.NUMBER, Platform.SENSOR, Platform.BINARY_SENSOR]
@@ -45,14 +50,15 @@ async def async_setup_entry(
 ) -> bool:
     """Set up platform from a ConfigEntry."""
     hass.data.setdefault(DOMAIN, {})
-
-    item = InventoryManagerItem(hass, entry.data)
+    item = InventoryManagerItem(hass, entry)
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = item
 
     dr = device_registry.async_get(hass)
     friendly_name = entry.data[CONF_ITEM_NAME]
-    if CONF_ITEM_SIZE in entry.data:
-        friendly_name = friendly_name + SPACE + entry.data[CONF_ITEM_SIZE]
+    if CONF_ITEM_SIZE in entry.options:
+        friendly_name += SPACE + entry.options[CONF_ITEM_SIZE]
+    if CONF_ITEM_UNIT in entry.options:
+        friendly_name += entry.options[CONF_ITEM_UNIT]
     dr.async_get_or_create(
         config_entry_id=entry.entry_id,
         entry_type=item.device_info["entry_type"],
@@ -61,27 +67,46 @@ async def async_setup_entry(
         name=friendly_name,
         identifiers=item.device_info["identifiers"],
     )
+
+    # Register listener for config changes in options flow
+    entry.async_on_unload(entry.add_update_listener(update_listener))
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     return True
 
 
+async def update_listener(hass, entry):
+    """Handle options update."""
+    item = hass.data[DOMAIN].get(entry.entry_id)
+    item.update(entry.options)
+
+
 class InventoryManagerItem:
     """This class represents the item data itself."""
 
-    def __init__(self, hass: core.HomeAssistant, d) -> None:
+    def __init__(
+        self, hass: core.HomeAssistant, entry: config_entries.ConfigEntry
+    ) -> None:
         """Create a new item."""
         self._hass = hass
-        self.data = d
+        self.entry = entry
+        data = entry.data
+        options = entry.options
         self._numbers = {}
 
-        self.device_id = d[CONF_ITEM_NAME].lower()
-        if CONF_ITEM_SIZE in d:
-            self.device_id = self.device_id + "-" + d[CONF_ITEM_SIZE].lower()
-        self.name = self.data[CONF_ITEM_NAME] + " " + self.data.get(CONF_ITEM_SIZE, "")
+        # Determine device id and name
+        self.device_id = data[CONF_ITEM_NAME].lower()
+        self.name = data[CONF_ITEM_NAME]
+        if CONF_ITEM_SIZE in options:
+            # self.device_id += "-" + options[CONF_ITEM_SIZE].lower()
+            self.name += " " + options[CONF_ITEM_SIZE]
+        if CONF_ITEM_UNIT in options:
+            # self.device_id += options[CONF_ITEM_UNIT].lower()
+            self.name += options[CONF_ITEM_UNIT]
+
         self.device_info: DeviceInfo = DeviceInfo(
             identifiers={(DOMAIN, self.device_id)},
-            manufacturer=d.get(CONF_ITEM_VENDOR, None),
+            manufacturer=options.get(CONF_ITEM_VENDOR, None),
             entry_type=DeviceEntryType.SERVICE,
             name=self.name,
         )
@@ -90,6 +115,9 @@ class InventoryManagerItem:
             entity_type: self._generate_entity_config(entity_type)
             for entity_type in InventoryManagerEntityType
         }
+
+    def update(self, d: dict) -> None:
+        """Reflect changes of the configuration."""
 
     def _generate_entity_config(self, entity_type: InventoryManagerEntityType) -> dict:
         if entity_type == InventoryManagerEntityType.EMPTYPREDICTION:
@@ -106,6 +134,17 @@ class InventoryManagerItem:
             ENTITY_TYPE: entity_type,
         }
 
+    def get_unit(self) -> str:
+        """Return the unit of the item."""
+        return self.entry.options.get(CONF_ITEM_UNIT, None)
+
+    def get_days_before_warning(self) -> int:
+        """Return number of days before warning is active."""
+        return self.entry.options.get(CONF_SENSOR_BEFORE_EMPTY, 10)
+
+    def get_max_consumption(self) -> float:
+        return self.entry.options.get(CONF_ITEM_MAX_CONSUMPTION, 5)
+
     def take_dose(self, dose: InventoryManagerEntityType) -> None:
         """Consume one dose."""
         if dose not in [
@@ -113,6 +152,8 @@ class InventoryManagerItem:
             InventoryManagerEntityType.NOON,
             InventoryManagerEntityType.EVENING,
             InventoryManagerEntityType.NIGHT,
+            InventoryManagerEntityType.WEEK,
+            InventoryManagerEntityType.MONTH,
         ]:
             _LOGGER.debug("Invalid argument for take_dose: %s", dose)
             return
@@ -142,6 +183,7 @@ class InventoryManagerItem:
                 self.entity[et].update()
             else:
                 _LOGGER.debug("%s cannot be updated yet", et)
+        _LOGGER.debug("Stored %f as new value for %s", val, spec)
 
     def get(self, entity_type: InventoryManagerEntityType) -> float:
         """Get number."""
@@ -168,7 +210,10 @@ class InventoryManagerItem:
                     InventoryManagerEntityType.NIGHT,
                 ]
             )
-
+            if self.get(InventoryManagerEntityType.WEEK) > 0:
+                s = s + self.get(InventoryManagerEntityType.WEEK) / 7
+            if self.get(InventoryManagerEntityType.MONTH) > 0:
+                s = s + self.get(InventoryManagerEntityType.MONTH) / 28
             return s
         except (KeyError, AttributeError):
             return 0

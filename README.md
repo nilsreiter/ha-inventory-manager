@@ -5,10 +5,12 @@ This integration is for tracking specific items in your household.
 - The component is added once for each item (e.g., dishwasher tabs)
 - Each item is represented as a service/device and offers multiple entities
 - Supply: How many pieces of the item we have left (entity type `number`)
-- Morning/Noon/Evening/Night: How many pieces are regularly consumed (settable in steps of 0.25)? (four entities of type `number`)
-- Empty: When do we predict the supply to be empty? (sensor of device class `timestamp`)
+- Morning/Noon/Evening/Night/Week/Month: How many pieces are regularly consumed (settable in steps of 0.05)?
+- Empty: When do we predict the supply to be empty? (sensor of device class `timestamp`). Note that for this purpose, monthly consumption is calculated as per 28 days.
 - Soon empty: Do we have to act? (binary sensor of device class `problem`)
-- The integration adds a service that can be called regularly (e.g., in the morning) or when specific things happen. This service reduces the number of items left by the specified amount (this should be run as an automation).
+- The integration adds two services that can be called regularly (e.g., in the morning) or when specific things happen.
+  - The service "consume" reduces the number of items left by the specified amount (this should be run as an automation).
+  - The service "store" increases the number of items left. This can be called after groceries have been bought.
 
 ## Use Cases
 

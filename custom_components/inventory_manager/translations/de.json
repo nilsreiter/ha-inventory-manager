@@ -1,10 +1,6 @@
 {
   "title": "Vorräte",
   "config": {
-    "error": {
-      "auth": "The auth token provided is not valid.",
-      "invalid_path": "The path provided is not valid. Should be in the format `user/repo-name`."
-    },
     "step": {
       "user": {
         "data": {
@@ -16,8 +12,65 @@
           "item_vendor": "Hersteller",
           "warning_days_before_empty": "Wie viele Tage vor leerem Bestand warnen?"
         },
+        "data_description": {
+          "item_name": "Nicht mehr änderbar.",
+          "item_size": "Optional. Größe oder Gewicht von einer zu verwaltenden Einheit.",
+          "item_unit": "Optional. Die Einheit in der Größe oder Gewicht gemessen wird.",
+          "item_agent": "Optional. Nicht mehr änderbar.",
+          "item_vendor": "Optional. Nicht mehr änderbar.",
+          "item_max_consumption": "Die maximale Anzahl an Einheiten, die zu einem Zeitpunkt konsumiert werden kann. ",
+          "warning_days_before_empty": "Ein binärer Sensor warnt so viele Tage vor dem Leerstand."
+        },
+        "description": "Beschreiben Sie die Versorgungseinheit, die Sie verfolgen wollen. Am besten ist es, in Einheiten zu denken, die sich leicht zählen und messen lassen. Das können Dosen, Stücke oder Pakete sein.",
+        "title": "Vorrat verfolgen"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "item_name": "Name des Objekts",
+          "item_size": "Menge oder Größe",
+          "item_unit": "Einheit (z.B. g)",
+          "item_max_consumption": "Maximaler Verbrauch",
+          "item_agent": "Wirkstoff",
+          "item_vendor": "Hersteller",
+          "warning_days_before_empty": "Wie viele Tage vor leerem Bestand warnen?"
+        },
+        "data_description": {
+          "item_size": "Geben Sie etwas ein, das messbar ist",
+          "item_unit": "Die Einheit, in der die Größe gemessen wird. Sollte eine Abkürzung sein, kann aber eine beliebige Zeichenfolge sein. Beispiele: g, l, Stk.",
+          "item_max_consumption": "Dient als Maximalwert für die Verbrauchseinstellungen."
+        },
         "description": "Objekt beschreiben",
-        "title": "Details ergänzen"
+        "title": "{name}"
+      }
+    }
+  },
+  "services": {
+    "consume": {
+      "name": "Verbrauchen",
+      "description": "Dieser Dienst kann aufgerufen werden, um eine bestimmte oder vordefinierte Stückzahl aus einem Angebot zu verbrauchen. Er gehört zur Integration des Inventory Manager. Wichtig! Es kann nur eines der Felder „Menge“ und „Vordefinierte Menge“ angegeben werden.",
+      "fields": {
+        "predefined-amount": {
+          "name": "Vordefinierte Menge",
+          "description": "Welche vordefinierte Menge an Einheiten werden verbraucht?"
+        },
+        "amount": {
+          "name": "Menge",
+          "description": "Wie viele Einheiten werden verbraucht?"
+        }
+      }
+    },
+    "store": {
+      "name": "Lagern",
+      "description": "Dieser Dienst kann aufgerufen werden, um den Vorrat eines bestimmten Items zu erhöhen.",
+      "fields": {
+        "amount": {
+          "name": "Menge",
+          "description": "Wie viele Einheiten werden eingelagert?"
+        }
       }
     }
   },
@@ -27,7 +80,9 @@
         "morning": "Morgens",
         "noon": "Mittags",
         "evening": "Abends",
-        "night": "Nachts"
+        "night": "Nachts",
+        "week": "Wöchentlich",
+        "month": "Monatlich"
       }
     }
   },
@@ -52,6 +107,12 @@
       },
       "night_entity": {
         "name": "Nachts"
+      },
+      "week_entity": {
+        "name": "Wöchentlich"
+      },
+      "month_entity": {
+        "name": "Monatlich"
       }
     },
     "binary_sensor": {

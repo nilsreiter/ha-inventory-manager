@@ -4,7 +4,7 @@ The sensor predicts when we run out of supplies.
 """
 import logging
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from homeassistant import config_entries, core
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
@@ -49,6 +49,7 @@ class EmptyPredictionSensor(SensorEntity):
         """Construct a new EmptyPredictionSensor."""
         _LOGGER.debug("Initializing ConsumptionSensor")
 
+        self.eternity = datetime(3000, 1, 1, tzinfo=timezone.utc)
         self.hass = hass
         self.item = item
         self.platform = entity_platform.async_get_current_platform()
@@ -65,7 +66,7 @@ class EmptyPredictionSensor(SensorEntity):
         self.unique_id = entity_config[UNIQUE_ID]
         self.extra_state_attributes = {}
         self.entity_id = entity_config[ENTITY_ID]
-        self.native_value: datetime = now() + timedelta(days=10000)
+        self.native_value: datetime = self.eternity
 
         self.device_class = SensorDeviceClass.TIMESTAMP
         self.translation_key = STRING_SENSOR_ENTITY
@@ -75,7 +76,10 @@ class EmptyPredictionSensor(SensorEntity):
         _LOGGER.debug("Updating sensor")
 
         self.extra_state_attributes[ATTR_DAYS_REMAINING] = self.item.days_remaining()
-        self.native_value = now() + timedelta(days=self.item.days_remaining())
+        try:
+            self.native_value = now() + timedelta(days=self.item.days_remaining())
+        except OverflowError:
+            self.native_value: datetime = self.eternity
         _LOGGER.debug(
             "Setting native value of %s to %s", self.entity_id, self.native_value
         )

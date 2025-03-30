@@ -72,5 +72,5 @@ class WarnSensor(BinarySensorEntity):
             self.available = False
         else:
             self.available = True
-            self.is_on = days_remaining < self.item.data[CONF_SENSOR_BEFORE_EMPTY]
+            self.is_on = days_remaining < self.item.get_days_before_warning()
         self.schedule_update_ha_state()
