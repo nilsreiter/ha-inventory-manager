@@ -28,6 +28,8 @@ STRING_MORNING_ENTITY = "morning_entity"
 STRING_NOON_ENTITY = "noon_entity"
 STRING_EVENING_ENTITY = "evening_entity"
 STRING_NIGHT_ENTITY = "night_entity"
+STRING_WEEK_ENTITY = "week_entity"
+STRING_MONTH_ENTITY = "month_entity"
 
 SERVICE_AMOUNT = "amount"
 SERVICE_PREDEFINED_AMOUNT = "predefined-amount"

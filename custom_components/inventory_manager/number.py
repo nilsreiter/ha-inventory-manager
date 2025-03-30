@@ -17,8 +17,6 @@ from .const import (
     DOMAIN,
     ENTITY_ID,
     NATIVE_VALUE,
-    CONF_ITEM_MAX_CONSUMPTION,
-    CONF_ITEM_UNIT,
     SERVICE_AMOUNT,
     SERVICE_AMOUNT_SPECIFICATION,
     SERVICE_CONSUME,
@@ -27,8 +25,9 @@ from .const import (
     STRING_MORNING_ENTITY,
     STRING_NIGHT_ENTITY,
     STRING_NOON_ENTITY,
+    STRING_WEEK_ENTITY,
+    STRING_MONTH_ENTITY,
     STRING_SUPPLY_ENTITY,
-    UNIT_PCS,
     UNIQUE_ID,
 )
 
@@ -52,6 +51,8 @@ async def async_setup_entry(
         ConsumptionEntity(hass, item, InventoryManagerEntityType.NOON),
         ConsumptionEntity(hass, item, InventoryManagerEntityType.EVENING),
         ConsumptionEntity(hass, item, InventoryManagerEntityType.NIGHT),
+        ConsumptionEntity(hass, item, InventoryManagerEntityType.WEEK),
+        ConsumptionEntity(hass, item, InventoryManagerEntityType.MONTH),
     ]
 
     async_add_entities(entities, update_before_add=False)
@@ -102,9 +103,13 @@ class InventoryNumber(RestoreNumber, metaclass=ABCMeta):
         self.unique_id: str = entity_config[UNIQUE_ID]
 
         self._available: bool = True
-        self.native_unit_of_measurement = item.data.get(CONF_ITEM_UNIT, UNIT_PCS)
-        self.native_step = 0.25
+        self.native_step = 0.05
         self.native_min_value = 0
+
+    @property
+    def native_unit_of_measurement(self) -> str | None:
+        """Return the native unit of measurement, as entered by user."""
+        return self.item.get_unit()
 
     @property
     def native_value(self) -> float:
@@ -118,6 +123,7 @@ class InventoryNumber(RestoreNumber, metaclass=ABCMeta):
 
     def set_native_value(self, value: float) -> None:
         """Set the native value."""
+        print("set_native_value called")
         self.native_value = value
 
     async def async_added_to_hass(self):
@@ -144,6 +150,10 @@ class InventoryNumber(RestoreNumber, metaclass=ABCMeta):
             return STRING_EVENING_ENTITY
         elif self.entity_type == InventoryManagerEntityType.NIGHT:
             return STRING_NIGHT_ENTITY
+        elif self.entity_type == InventoryManagerEntityType.WEEK:
+            return STRING_WEEK_ENTITY
+        elif self.entity_type == InventoryManagerEntityType.MONTH:
+            return STRING_MONTH_ENTITY
         else:
             return STRING_SUPPLY_ENTITY
 
@@ -154,14 +164,18 @@ class ConsumptionEntity(InventoryNumber):
     def __init__(
         self,
         hass: core.HomeAssistant,
-        config: InventoryManagerItem,
+        item: InventoryManagerItem,
         time: InventoryManagerEntityType,
     ) -> None:
         """Create a new consumption entity."""
-        super().__init__(hass, config, time)
-        self.native_max_value = float(config.data.get(CONF_ITEM_MAX_CONSUMPTION, 5))
+        super().__init__(hass, item, time)
         self.icon = "mdi:pill-multiple"
         self.entity_category = EntityCategory.CONFIG
+
+    @property
+    def native_max_value(self):
+        """Return the maximum native value."""
+        return self.item.get_max_consumption()
 
 
 class SupplyEntity(InventoryNumber):
