@@ -7,6 +7,9 @@ from homeassistant import config_entries
 import homeassistant.helpers.config_validation as cv
 
 from .const import (
+    CONF_ITEM_NAME,
+    CONF_ITEM_VENDOR,
+    CONF_ITEM_AGENT,
     CONF_ITEM_SIZE,
     CONF_ITEM_MAX_CONSUMPTION,
     CONF_ITEM_UNIT,
@@ -45,4 +48,13 @@ class InventoryOptionsFlowHandler(config_entries.OptionsFlow):
             data_schema=self.add_suggested_values_to_schema(
                 OPTIONS_SCHEMA, self._config_entry.options
             ),
+            description_placeholders={
+                "name": self._config_entry.data[CONF_ITEM_NAME],
+                "vendor": self._config_entry.data[CONF_ITEM_VENDOR]
+                if CONF_ITEM_VENDOR in self._config_entry.data
+                else "",
+                "agent": self._config_entry.data[CONF_ITEM_AGENT]
+                if CONF_ITEM_AGENT in self._config_entry.data
+                else "",
+            },
         )

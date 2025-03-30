@@ -20,6 +20,7 @@ from .const import (
     SERVICE_AMOUNT,
     SERVICE_AMOUNT_SPECIFICATION,
     SERVICE_CONSUME,
+    SERVICE_STORE,
     SERVICE_PREDEFINED_AMOUNT,
     STRING_EVENING_ENTITY,
     STRING_MORNING_ENTITY,
@@ -73,6 +74,14 @@ async def async_setup_entry(
             lambda target, payload: target.take(payload),
         )
 
+        platform.async_register_entity_service(
+            SERVICE_STORE,
+            {
+                vol.Required(SERVICE_AMOUNT, SERVICE_AMOUNT_SPECIFICATION): cv.Number,
+            },
+            lambda target, payload: target.store(payload),
+        )
+
 
 class InventoryNumber(RestoreNumber, metaclass=ABCMeta):
     """Represents a numeric entity.
@@ -123,7 +132,6 @@ class InventoryNumber(RestoreNumber, metaclass=ABCMeta):
 
     def set_native_value(self, value: float) -> None:
         """Set the native value."""
-        print("set_native_value called")
         self.native_value = value
 
     async def async_added_to_hass(self):
@@ -213,3 +221,7 @@ class SupplyEntity(InventoryNumber):
                 call.data[SERVICE_AMOUNT],
             )
             self.item.take_number(call.data[SERVICE_AMOUNT])
+
+    def store(self, call: core.ServiceCall):
+        """Execute the service call to store additional supplies."""
+        self.item.take_number(-1 * call.data[SERVICE_AMOUNT])
