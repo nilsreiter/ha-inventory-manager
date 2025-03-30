@@ -1,4 +1,6 @@
 """constants for inventory manager."""
+import datetime
+
 DOMAIN = "inventory_manager"
 
 UNDERSCORE = "_"
@@ -19,6 +21,7 @@ ATTR_DAILY = "daily"
 ATTR_DAYS_REMAINING = "days_remaining"
 
 SERVICE_CONSUME = "consume"
+SERVICE_STORE = "store"
 
 STRING_PROBLEM_ENTITY = "problem_entity"
 STRING_SENSOR_ENTITY = "sensor_entity"

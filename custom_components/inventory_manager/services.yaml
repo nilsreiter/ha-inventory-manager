@@ -1,3 +1,17 @@
+store:
+  target:
+    entity:
+      domain: number
+      integration: inventory_manager
+      supported_features:
+        - light.LightEntityFeature.EFFECT
+  fields:
+    amount:
+      required: true
+      example: 42
+      default: 0
+      selector:
+        number:
 consume:
   target:
     entity:
@@ -5,12 +19,14 @@ consume:
       integration: inventory_manager
       supported_features:
         - light.LightEntityFeature.EFFECT
-
   fields:
     amount:
+      example: 42
+      default: 0
       selector:
         number:
     predefined-amount:
+      example: "morning"
       selector:
         select:
           translation_key: time
@@ -19,3 +35,5 @@ consume:
             - "noon"
             - "evening"
             - "night"
+            - "week"
+            - "month"

@@ -22,6 +22,7 @@ from .const import (
     SERVICE_AMOUNT,
     SERVICE_AMOUNT_SPECIFICATION,
     SERVICE_CONSUME,
+    SERVICE_STORE,
     SERVICE_PREDEFINED_AMOUNT,
     STRING_EVENING_ENTITY,
     STRING_MORNING_ENTITY,
@@ -81,6 +82,14 @@ async def async_setup_entry(
                 ): cv.string,
             },
             lambda target, payload: target.take(payload),
+        )
+
+        platform.async_register_entity_service(
+            SERVICE_STORE,
+            {
+                vol.Required(SERVICE_AMOUNT, SERVICE_AMOUNT_SPECIFICATION): cv.Number,
+            },
+            lambda target, payload: target.store(payload),
         )
 
 
