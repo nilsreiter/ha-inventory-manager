@@ -142,6 +142,11 @@ class InventoryNumber(InventoryManagerEntity, RestoreNumber):
         """Create a new number entity."""
         super().__init__(item)
         self.entity_description = description
+
+        if description.entity_type is None:
+            msg = "entity_type must be specified in the entity description"
+            raise ValueError(msg)
+
         self.entity_type: InventoryManagerEntityType = description.entity_type
 
         # register self with the item object
