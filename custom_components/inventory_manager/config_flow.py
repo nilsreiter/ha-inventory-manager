@@ -39,10 +39,10 @@ PILL_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_ITEM_NAME): cv.string,
         vol.Optional(CONF_ITEM_SIZE): cv.positive_int,
-        vol.Required(CONF_ITEM_UNIT): cv.string,
+        vol.Optional(CONF_ITEM_UNIT): cv.string,
         vol.Optional(CONF_ITEM_AGENT): cv.string,
         vol.Optional(CONF_ITEM_VENDOR): cv.string,
-        vol.Optional(CONF_ITEM_MAX_CONSUMPTION, default=5.0): cv.positive_float,
+        vol.Required(CONF_ITEM_MAX_CONSUMPTION, default=5.0): cv.positive_float,
         vol.Required(CONF_SENSOR_BEFORE_EMPTY, default=10): cv.positive_int,
     }
 )

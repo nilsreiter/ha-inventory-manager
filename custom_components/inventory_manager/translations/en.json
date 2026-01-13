@@ -15,7 +15,19 @@
           "item_max_consumption": "Maximal consumption",
           "item_vendor": "Vendor",
           "warning_days_before_empty": "Advanced warning in days"
-
+        },
+        "description": "Describe the object",
+        "title": "Add Details"
+      },
+      "init": {
+        "data": {
+          "item_name": "Object name",
+          "item_size": "Agent weight or size",
+          "item_unit": "Unit (e.g., g)",
+          "item_agent": "Agent name",
+          "item_max_consumption": "Maximal consumption",
+          "item_vendor": "Vendor",
+          "warning_days_before_empty": "Advanced warning in days"
         },
         "description": "Describe the object",
         "title": "Add Details"
@@ -44,7 +56,9 @@
         "morning": "Morning",
         "noon": "Noon",
         "evening": "Evening",
-        "night": "Night"
+        "night": "Night",
+        "week": "Week",
+        "month": "Month"
       }
     }
   },
@@ -64,6 +78,12 @@
       },
       "night_entity": {
         "name": "Night"
+      },
+      "week_entity": {
+        "name": "Week"
+      },
+      "month_entity": {
+        "name": "Month"
       }
     },
     "binary_sensor": {

@@ -19,6 +19,21 @@
         "description": "Objekt beschreiben",
         "title": "Details ergänzen"
       }
+    },
+    "init": {
+      "user": {
+        "data": {
+          "item_name": "Name des Objekts",
+          "item_size": "Menge oder Größe",
+          "item_unit": "Einheit (z.B. g)",
+          "item_max_consumption": "Maximaler Verbrauch",
+          "item_agent": "Wirkstoff",
+          "item_vendor": "Hersteller",
+          "warning_days_before_empty": "Wie viele Tage vor leerem Bestand warnen?"
+        },
+        "description": "Objekt beschreiben",
+        "title": "Details ergänzen"
+      }
     }
   },
   "selector": {
@@ -27,7 +42,9 @@
         "morning": "Morgens",
         "noon": "Mittags",
         "evening": "Abends",
-        "night": "Nachts"
+        "night": "Nachts",
+        "week": "Wöchentlich",
+        "month": "Monatlich"
       }
     }
   },
@@ -52,6 +69,12 @@
       },
       "night_entity": {
         "name": "Nachts"
+      },
+      "week_entity": {
+        "name": "Wöchentlich"
+      },
+      "month_entity": {
+        "name": "Monatlich"
       }
     },
     "binary_sensor": {

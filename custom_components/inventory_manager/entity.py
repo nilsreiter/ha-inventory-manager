@@ -20,6 +20,8 @@ class InventoryManagerEntityType(IntFlag):
     EVENING = 64
     WARNING = 128
     EMPTYPREDICTION = 256
+    WEEK = 512
+    MONTH = 1024
 
 
 class InventoryManagerEntity(CoordinatorEntity, Entity):

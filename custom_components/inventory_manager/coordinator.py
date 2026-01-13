@@ -1,5 +1,6 @@
 """Coordinator for Inventory Manager integration."""
 
+from ast import In
 import logging
 import uuid
 from typing import Any
@@ -67,6 +68,8 @@ class InventoryManagerItem(DataUpdateCoordinator):
             InventoryManagerEntityType.NOON,
             InventoryManagerEntityType.EVENING,
             InventoryManagerEntityType.NIGHT,
+            InventoryManagerEntityType.WEEK,
+            InventoryManagerEntityType.MONTH,
         ]:
             _LOGGER.debug("Invalid argument for take_dose: %s", dose)
             return
@@ -121,6 +124,10 @@ class InventoryManagerItem(DataUpdateCoordinator):
                     InventoryManagerEntityType.NIGHT,
                 ]
             )
+            if self.get(InventoryManagerEntityType.WEEK) > 0:
+                s = s + self.get(InventoryManagerEntityType.WEEK) / 7
+            if self.get(InventoryManagerEntityType.MONTH) > 0:
+                s = s + self.get(InventoryManagerEntityType.MONTH) / 28
 
             return s
         except (KeyError, AttributeError):
