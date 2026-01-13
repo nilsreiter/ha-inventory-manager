@@ -125,10 +125,12 @@ class InventoryNumber(InventoryManagerEntity, RestoreNumber, metaclass=ABCMeta):
     def native_value(self, value: float) -> None:
         _LOGGER.debug("Setting native value of %s to %2.1f.", self.entity_id, value)
         self.coordinator.set(self.entity_type, value)
+        self.schedule_update_ha_state()
 
     def set_native_value(self, value: float) -> None:
         """Set the native value."""
         self.native_value = value
+        self.schedule_update_ha_state()
 
     async def async_added_to_hass(self) -> None:
         """Restore the number from last time."""
@@ -142,6 +144,7 @@ class InventoryNumber(InventoryManagerEntity, RestoreNumber, metaclass=ABCMeta):
                     self.native_value = 0.0
         except AttributeError:
             self.set_native_value(0.0)
+            self.schedule_update_ha_state()
 
     @property
     def translation_key(self) -> str:
