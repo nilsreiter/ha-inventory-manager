@@ -1,19 +1,19 @@
 """config flow for inventory manager."""
+
 import logging
 from typing import Any
 
-import voluptuous as vol
-
-from homeassistant import config_entries
 import homeassistant.helpers.config_validation as cv
+import voluptuous as vol
+from homeassistant import config_entries
 
 from .const import (
     CONF_ITEM_AGENT,
+    CONF_ITEM_MAX_CONSUMPTION,
     CONF_ITEM_NAME,
     CONF_ITEM_SIZE,
-    CONF_ITEM_MAX_CONSUMPTION,
-    CONF_ITEM_VENDOR,
     CONF_ITEM_UNIT,
+    CONF_ITEM_VENDOR,
     CONF_SENSOR_BEFORE_EMPTY,
     DOMAIN,
 )
@@ -31,6 +31,9 @@ PILL_SCHEMA = vol.Schema(
         vol.Required(CONF_SENSOR_BEFORE_EMPTY, default=10): cv.positive_int,
     }
 )
+# TODO: Add validation to ensure max consumption is a number if provided.
+# TODO: Add option to change options after initial setup.
+# TODO: Add option to select platforms to enable/disable.
 
 
 class InventoryConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):

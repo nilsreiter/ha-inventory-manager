@@ -1,17 +1,20 @@
-"""Sensor platform for inventory manager.
+"""
+Sensor platform for inventory manager.
 
 The sensor predicts when we run out of supplies.
 """
-import logging
 
+import logging
 from datetime import datetime, timedelta
 
 from homeassistant import config_entries, core
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
-from homeassistant.util.dt import now
 from homeassistant.helpers import entity_platform
+from homeassistant.util.dt import now
 
-from . import InventoryManagerItem, InventoryManagerEntityType
+from custom_components.inventory_manager.number import AddEntitiesCallback
+
+from . import InventoryManagerEntityType, InventoryManagerItem
 from .const import (
     ATTR_DAYS_REMAINING,
     DOMAIN,
@@ -20,24 +23,22 @@ from .const import (
     UNIQUE_ID,
 )
 
-
 _LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(
     hass: core.HomeAssistant,
     config_entry: config_entries.ConfigEntry,
-    async_add_entities,
-):
+    async_add_entities: AddEntitiesCallback,
+) -> None:
     """Set up sensors from a config entry created in the integrations UI."""
-
     config = hass.data[DOMAIN][config_entry.entry_id]
     sensors = [EmptyPredictionSensor(hass, config)]
     async_add_entities(sensors, update_before_add=True)
 
 
 class EmptyPredictionSensor(SensorEntity):
-    """Represents a sensor to predict when we run out of supplies, given our daily consumption."""
+    """Represents a sensor to predict when we run out of supplies."""
 
     _attr_has_entity_name = True
     _attr_name = "Supply empty"
@@ -47,7 +48,7 @@ class EmptyPredictionSensor(SensorEntity):
 
     def __init__(self, hass: core.HomeAssistant, item: InventoryManagerItem) -> None:
         """Construct a new EmptyPredictionSensor."""
-        _LOGGER.debug("Initializing ConsumptionSensor")
+        _LOGGER.debug("Initializing EmptyPredictionSensor")
 
         self.hass = hass
         self.item = item
@@ -70,7 +71,7 @@ class EmptyPredictionSensor(SensorEntity):
         self.device_class = SensorDeviceClass.TIMESTAMP
         self.translation_key = STRING_SENSOR_ENTITY
 
-    def update(self):
+    def update(self) -> None:
         """Recalculate the remaining time until supply is empty."""
         _LOGGER.debug("Updating sensor")
 
@@ -79,5 +80,5 @@ class EmptyPredictionSensor(SensorEntity):
         _LOGGER.debug(
             "Setting native value of %s to %s", self.entity_id, self.native_value
         )
-        self.available = True
+        self._available = True
         self.schedule_update_ha_state()

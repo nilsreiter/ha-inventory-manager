@@ -1,24 +1,25 @@
 """Number entities for inventory manager."""
+
 import logging
 from abc import ABCMeta
+from types import NoneType
+from typing import TYPE_CHECKING
 
+import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
-
-
 from homeassistant import config_entries, core
 from homeassistant.components.number import RestoreNumber
 from homeassistant.const import EntityCategory
 from homeassistant.helpers import entity_platform
-import homeassistant.helpers.config_validation as cv
-from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from . import InventoryManagerItem, InventoryManagerEntityType
+
+from . import InventoryManagerEntityType, InventoryManagerItem
 from .const import (
+    CONF_ITEM_MAX_CONSUMPTION,
+    CONF_ITEM_UNIT,
     DOMAIN,
     ENTITY_ID,
     NATIVE_VALUE,
-    CONF_ITEM_MAX_CONSUMPTION,
-    CONF_ITEM_UNIT,
     SERVICE_AMOUNT,
     SERVICE_AMOUNT_SPECIFICATION,
     SERVICE_CONSUME,
@@ -28,20 +29,24 @@ from .const import (
     STRING_NIGHT_ENTITY,
     STRING_NOON_ENTITY,
     STRING_SUPPLY_ENTITY,
-    UNIT_PCS,
     UNIQUE_ID,
+    UNIT_PCS,
 )
+
+if TYPE_CHECKING:
+    from homeassistant.helpers.entity import DeviceInfo
 
 _LOGGER = logging.getLogger(__name__)
 
 
+# TODO: Add option to change number parameters (min, max, step) from config flow.
+# TODO: Use EntityDescription for number entities.
 async def async_setup_entry(
     hass: core.HomeAssistant,
     config_entry: config_entries.ConfigEntry,
     async_add_entities: AddEntitiesCallback,
-):
+) -> NoneType:
     """Set up number entities and register service."""
-
     # Get the item object
     item: InventoryManagerItem = hass.data[DOMAIN][config_entry.entry_id]
 
@@ -74,7 +79,8 @@ async def async_setup_entry(
 
 
 class InventoryNumber(RestoreNumber, metaclass=ABCMeta):
-    """Represents a numeric entity.
+    """
+    Represents a numeric entity.
 
     Abstract base class for several entities.
     """
@@ -120,7 +126,7 @@ class InventoryNumber(RestoreNumber, metaclass=ABCMeta):
         """Set the native value."""
         self.native_value = value
 
-    async def async_added_to_hass(self):
+    async def async_added_to_hass(self) -> None:
         """Restore the number from last time."""
         try:
             last_data = await self.async_get_last_number_data()
@@ -138,14 +144,13 @@ class InventoryNumber(RestoreNumber, metaclass=ABCMeta):
         """Return the translation key."""
         if self.entity_type == InventoryManagerEntityType.MORNING:
             return STRING_MORNING_ENTITY
-        elif self.entity_type == InventoryManagerEntityType.NOON:
+        if self.entity_type == InventoryManagerEntityType.NOON:
             return STRING_NOON_ENTITY
-        elif self.entity_type == InventoryManagerEntityType.EVENING:
+        if self.entity_type == InventoryManagerEntityType.EVENING:
             return STRING_EVENING_ENTITY
-        elif self.entity_type == InventoryManagerEntityType.NIGHT:
+        if self.entity_type == InventoryManagerEntityType.NIGHT:
             return STRING_NIGHT_ENTITY
-        else:
-            return STRING_SUPPLY_ENTITY
+        return STRING_SUPPLY_ENTITY
 
 
 class ConsumptionEntity(InventoryNumber):
@@ -167,7 +172,7 @@ class ConsumptionEntity(InventoryNumber):
 class SupplyEntity(InventoryNumber):
     """Represents the supply of the current item."""
 
-    def __init__(self, hass: core.HomeAssistant, pill) -> None:
+    def __init__(self, hass: core.HomeAssistant, pill: InventoryManagerItem) -> None:
         """Create a new suppy entity."""
         _LOGGER.debug("Initializing SupplyEntity")
         super().__init__(hass, pill, InventoryManagerEntityType.SUPPLY)
@@ -175,15 +180,16 @@ class SupplyEntity(InventoryNumber):
         self.icon = "mdi:medication"
 
     @property
-    def supported_features(self):
-        """Return 4.
+    def supported_features(self) -> int:
+        """
+        Return 4.
 
         This is a hack, because apparently custom features are not possible.
         This is only used to allow restriction of target entity in service call.
         """
         return 4  # LightEntityFeature.EFFECT
 
-    def take(self, call: core.ServiceCall):
+    def take(self, call: core.ServiceCall) -> None:
         """Execute the consume service call."""
         if SERVICE_PREDEFINED_AMOUNT in call.data:
             _LOGGER.debug(

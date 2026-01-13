@@ -1,14 +1,16 @@
 """Inventory manager integration."""
-from __future__ import annotations
-from enum import IntFlag
-import logging
 
-from homeassistant import config_entries, core
+from __future__ import annotations
+
+import logging
+from enum import IntFlag
+from typing import TYPE_CHECKING
+
 from homeassistant.const import Platform
 from homeassistant.helpers import device_registry
-from homeassistant.helpers.entity import generate_entity_id
 from homeassistant.helpers.device_registry import DeviceEntryType
-from homeassistant.helpers.entity import DeviceInfo
+from homeassistant.helpers.entity import DeviceInfo, generate_entity_id
+
 from .const import (
     CONF_ITEM_NAME,
     CONF_ITEM_SIZE,
@@ -20,6 +22,9 @@ from .const import (
     UNDERSCORE,
     UNIQUE_ID,
 )
+
+if TYPE_CHECKING:
+    from homeassistant import config_entries, core
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -67,7 +72,7 @@ async def async_setup_entry(
 
 
 class InventoryManagerItem:
-    """This class represents the item data itself."""
+    """The class represents the item data itself."""
 
     def __init__(self, hass: core.HomeAssistant, d) -> None:
         """Create a new item."""
@@ -153,8 +158,7 @@ class InventoryManagerItem:
         daily = self.daily_consumption()
         if daily > 0:
             return supply / daily
-        else:
-            return 10000
+        return 10000
 
     def daily_consumption(self) -> float:
         """Calculate the daily consumption."""
