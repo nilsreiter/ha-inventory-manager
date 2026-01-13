@@ -166,7 +166,7 @@ class ConsumptionEntity(InventoryNumber):
         """Create a new consumption entity."""
         super().__init__(coordinator, time)
         self.native_max_value = float(
-            coordinator.data.get(CONF_ITEM_MAX_CONSUMPTION, 5)
+            coordinator.config_entry.data.get(CONF_ITEM_MAX_CONSUMPTION, 5)
         )
         self.icon = "mdi:pill-multiple"
         self.entity_category = EntityCategory.CONFIG
