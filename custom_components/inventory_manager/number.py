@@ -44,9 +44,8 @@ if TYPE_CHECKING:
 _LOGGER = logging.getLogger(__name__)
 
 
-# TODO(nilsreiter): Add option to change number parameters (min, max, step)
-#   from config flow.
-# TODO(nilsreiter): Use EntityDescription for number entities.
+# TODO: Add option to change number parameters (min, max, step) from config flow.
+# TODO: Use EntityDescription for number entities.
 async def async_setup_entry(
     hass: core.HomeAssistant,
     config_entry: config_entries.ConfigEntry,

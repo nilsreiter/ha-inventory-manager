@@ -46,7 +46,7 @@ PILL_SCHEMA = vol.Schema(
         vol.Required(CONF_SENSOR_BEFORE_EMPTY, default=10): cv.positive_int,
     }
 )
-# TODO(nilsreiter): Add option to select platforms to enable/disable.
+# TODO: Add option to select platforms to enable/disable.
 
 
 class InventoryConfigFlow(ConfigFlow, domain=DOMAIN):

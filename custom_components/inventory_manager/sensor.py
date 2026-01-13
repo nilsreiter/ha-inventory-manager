@@ -38,7 +38,7 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up sensors from a config entry created in the integrations UI."""
-    # TODO(nilsreiter): Switch to the use of entity descriptions
+    # TODO: Switch to the use of entity descriptions
     sensors = [EmptyPredictionSensor(config_entry.runtime_data.coordinator)]
     async_add_entities(sensors, update_before_add=True)
 
