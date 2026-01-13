@@ -50,7 +50,7 @@ class InventoryConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         config_entry: config_entries.ConfigEntry,
     ) -> config_entries.OptionsFlow:
         """Get the options flow for this handler."""
-        return InventoryOptionsFlowHandler(config_entry)
+        return InventoryOptionsFlowHandler()
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
@@ -77,18 +77,20 @@ class InventoryConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 class InventoryOptionsFlowHandler(config_entries.OptionsFlow):
     """Handle options flow for Inventory Manager."""
 
-    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
-        """Initialize options flow."""
-        super().__init__()
-
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> config_entries.ConfigFlowResult:
         """Manage the options."""
         if user_input is not None:
-            # Update the config entry with new data
+            # Store options separately and update config entry title if name changed
+            title = user_input.get(CONF_ITEM_NAME, "")
+            if CONF_ITEM_SIZE in user_input and user_input[CONF_ITEM_SIZE]:
+                title += " " + user_input[CONF_ITEM_SIZE]
+            
+            # Update config entry with new data (merging with existing)
             self.hass.config_entries.async_update_entry(
                 self.config_entry,
+                title=title,
                 data={**self.config_entry.data, **user_input},
             )
             return self.async_create_entry(title="", data={})
