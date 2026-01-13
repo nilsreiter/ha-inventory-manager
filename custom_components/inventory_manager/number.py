@@ -110,9 +110,11 @@ class InventoryNumber(InventoryManagerEntity, RestoreNumber, metaclass=ABCMeta):
         self.unique_id: str = entity_config[UNIQUE_ID]
 
         self._available: bool = True
-        self.native_unit_of_measurement = item.data.get(CONF_ITEM_UNIT, UNIT_PCS)
-        self.native_step = 0.25
-        self.native_min_value = 0
+        self._attr_native_unit_of_measurement = item.config_entry.data.get(
+            CONF_ITEM_UNIT, UNIT_PCS
+        )
+        self._attr_native_step = 0.25
+        self._attr_native_min_value = 0
 
     @property
     def native_value(self) -> float:
