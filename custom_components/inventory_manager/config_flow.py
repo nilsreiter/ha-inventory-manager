@@ -1,4 +1,4 @@
-"""config flow for inventory manager."""
+"""Config flow for inventory manager."""
 
 import logging
 from typing import Any
@@ -50,7 +50,7 @@ PILL_SCHEMA = vol.Schema(
 
 
 class InventoryConfigFlow(ConfigFlow, domain=DOMAIN):
-    """Github Custom config flow."""
+    """Handle config flow for Inventory Manager integration."""
 
     VERSION = 1
     MINOR_VERSION = 1
@@ -68,7 +68,7 @@ class InventoryConfigFlow(ConfigFlow, domain=DOMAIN):
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Bla."""
+        """Handle user step to configure the integration."""
         errors: dict[str, str] = {}
         if user_input is not None:
             # Input is valid, set data.
