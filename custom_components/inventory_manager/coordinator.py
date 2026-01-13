@@ -1,16 +1,15 @@
+"""Coordinator for Inventory Manager integration."""
+
 import logging
 import uuid
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from homeassistant.helpers.entity import generate_entity_id
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from .const import (
-    CONF_ITEM_NAME,
-    CONF_ITEM_SIZE,
     ENTITY_ID,
     ENTITY_TYPE,
-    SPACE,
     UNDERSCORE,
     UNIQUE_ID,
 )
