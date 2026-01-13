@@ -33,15 +33,14 @@ def _build_entry_title(data: dict[str, Any]) -> str:
 PILL_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_ITEM_NAME): cv.string,
-        vol.Optional(CONF_ITEM_SIZE): cv.string,
+        vol.Optional(CONF_ITEM_SIZE): cv.positive_int,
         vol.Required(CONF_ITEM_UNIT): cv.string,
         vol.Optional(CONF_ITEM_AGENT): cv.string,
         vol.Optional(CONF_ITEM_VENDOR): cv.string,
-        vol.Optional(CONF_ITEM_MAX_CONSUMPTION): cv.string,
+        vol.Optional(CONF_ITEM_MAX_CONSUMPTION, default=5.0): cv.positive_float,
         vol.Required(CONF_SENSOR_BEFORE_EMPTY, default=10): cv.positive_int,
     }
 )
-# TODO: Add validation to ensure max consumption is a number if provided.
 # TODO: Add option to select platforms to enable/disable.
 
 
@@ -109,8 +108,8 @@ class InventoryOptionsFlowHandler(config_entries.OptionsFlow):
                 ): cv.string,
                 vol.Optional(
                     CONF_ITEM_SIZE,
-                    default=current_data.get(CONF_ITEM_SIZE, ""),
-                ): cv.string,
+                    default=current_data.get(CONF_ITEM_SIZE),
+                ): cv.positive_int,
                 vol.Required(
                     CONF_ITEM_UNIT,
                     default=current_data.get(CONF_ITEM_UNIT, ""),
@@ -125,8 +124,8 @@ class InventoryOptionsFlowHandler(config_entries.OptionsFlow):
                 ): cv.string,
                 vol.Optional(
                     CONF_ITEM_MAX_CONSUMPTION,
-                    default=current_data.get(CONF_ITEM_MAX_CONSUMPTION, ""),
-                ): cv.string,
+                    default=current_data.get(CONF_ITEM_MAX_CONSUMPTION, 5.0),
+                ): cv.positive_float,
                 vol.Required(
                     CONF_SENSOR_BEFORE_EMPTY,
                     default=current_data.get(CONF_SENSOR_BEFORE_EMPTY, 10),
