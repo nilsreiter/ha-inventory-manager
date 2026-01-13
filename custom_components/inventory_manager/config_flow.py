@@ -26,7 +26,7 @@ def _build_entry_title(data: dict[str, Any]) -> str:
     """Build entry title from configuration data."""
     title = data.get(CONF_ITEM_NAME, "")
     if data.get(CONF_ITEM_SIZE):
-        title += " " + data[CONF_ITEM_SIZE]
+        title += " " + str(data[CONF_ITEM_SIZE])
     return title
 
 
