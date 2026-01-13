@@ -22,8 +22,8 @@ from .const import (
     SERVICE_AMOUNT,
     SERVICE_AMOUNT_SPECIFICATION,
     SERVICE_CONSUME,
-    SERVICE_STORE,
     SERVICE_PREDEFINED_AMOUNT,
+    SERVICE_STORE,
     STRING_EVENING_ENTITY,
     STRING_MORNING_ENTITY,
     STRING_NIGHT_ENTITY,
@@ -44,8 +44,9 @@ if TYPE_CHECKING:
 _LOGGER = logging.getLogger(__name__)
 
 
-# TODO: Add option to change number parameters (min, max, step) from config flow.
-# TODO: Use EntityDescription for number entities.
+# TODO(nilsreiter): Add option to change number parameters (min, max, step)
+#   from config flow.
+# TODO(nilsreiter): Use EntityDescription for number entities.
 async def async_setup_entry(
     hass: core.HomeAssistant,
     config_entry: config_entries.ConfigEntry,

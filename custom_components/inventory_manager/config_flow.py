@@ -46,7 +46,7 @@ PILL_SCHEMA = vol.Schema(
         vol.Required(CONF_SENSOR_BEFORE_EMPTY, default=10): cv.positive_int,
     }
 )
-# TODO: Add option to select platforms to enable/disable.
+# TODO(nilsreiter): Add option to select platforms to enable/disable.
 
 
 class InventoryConfigFlow(ConfigFlow, domain=DOMAIN):
@@ -60,7 +60,7 @@ class InventoryConfigFlow(ConfigFlow, domain=DOMAIN):
     @staticmethod
     @callback
     def async_get_options_flow(
-        config_entry: ConfigEntry,
+        _config_entry: ConfigEntry,
     ) -> OptionsFlow:
         """Get the options flow for this handler."""
         return InventoryOptionsFlowHandler()

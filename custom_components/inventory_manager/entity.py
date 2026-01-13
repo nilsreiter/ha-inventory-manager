@@ -1,8 +1,9 @@
+"""Entity classes for Inventory Manager integration."""
+
 from __future__ import annotations
 
-from collections.abc import Mapping
 from enum import IntFlag
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.update_coordinator import CoordinatorEntity

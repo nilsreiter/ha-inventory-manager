@@ -1,3 +1,5 @@
+"""Data classes for Inventory Manager integration."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass

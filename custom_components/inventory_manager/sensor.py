@@ -33,12 +33,12 @@ _LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(
-    hass: HomeAssistant,
+    _hass: HomeAssistant,
     config_entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up sensors from a config entry created in the integrations UI."""
-    # TODO: Switch to the use of entity descriptions
+    # TODO(nilsreiter): Switch to the use of entity descriptions
     sensors = [EmptyPredictionSensor(config_entry.runtime_data.coordinator)]
     async_add_entities(sensors, update_before_add=True)
 

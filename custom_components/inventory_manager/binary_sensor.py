@@ -32,19 +32,19 @@ _LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(
-    hass: core.HomeAssistant,
+    _hass: core.HomeAssistant,
     config_entry: InventoryManagerConfigEntry,
     async_add_entities: entity_platform.AddEntitiesCallback,
 ) -> None:
     """Set up sensors from a config entry created in the integrations UI."""
-    # TODO: Switch to the use of entity descriptions
+    # TODO(nilsreiter): Switch to the use of entity descriptions
     async_add_entities(
         [WarnSensor(config_entry.runtime_data.coordinator)], update_before_add=True
     )
 
 
-# TODO: Add tests for this entity.
-# TODO: Verify that attributes are correctly set and updated.
+# TODO(nilsreiter): Add tests for this entity.
+# TODO(nilsreiter): Verify that attributes are correctly set and updated.
 class WarnSensor(InventoryManagerEntity, BinarySensorEntity):
     """Represents a warning entity."""
 
