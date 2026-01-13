@@ -1,8 +1,9 @@
 """Number entities for inventory manager."""
 
+from __future__ import annotations
+
 import logging
 from abc import ABCMeta
-from types import NoneType
 from typing import TYPE_CHECKING
 
 import homeassistant.helpers.config_validation as cv
@@ -11,9 +12,7 @@ from homeassistant import config_entries, core
 from homeassistant.components.number import RestoreNumber
 from homeassistant.const import EntityCategory
 from homeassistant.helpers import entity_platform
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from . import InventoryManagerEntityType, InventoryManagerItem
 from .const import (
     CONF_ITEM_MAX_CONSUMPTION,
     CONF_ITEM_UNIT,
@@ -32,9 +31,14 @@ from .const import (
     UNIQUE_ID,
     UNIT_PCS,
 )
+from .entity import InventoryManagerEntity, InventoryManagerEntityType
 
 if TYPE_CHECKING:
-    from homeassistant.helpers.entity import DeviceInfo
+    from types import NoneType
+
+    from homeassistant.helpers.entity_platform import AddEntitiesCallback
+
+    from .coordinator import InventoryManagerItem
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -48,15 +52,15 @@ async def async_setup_entry(
 ) -> NoneType:
     """Set up number entities and register service."""
     # Get the item object
-    item: InventoryManagerItem = hass.data[DOMAIN][config_entry.entry_id]
+    coordinator: InventoryManagerItem = hass.data[DOMAIN][config_entry.entry_id]
 
     # Create numeric entities
     entities = [
-        SupplyEntity(hass, item),
-        ConsumptionEntity(hass, item, InventoryManagerEntityType.MORNING),
-        ConsumptionEntity(hass, item, InventoryManagerEntityType.NOON),
-        ConsumptionEntity(hass, item, InventoryManagerEntityType.EVENING),
-        ConsumptionEntity(hass, item, InventoryManagerEntityType.NIGHT),
+        SupplyEntity(coordinator),
+        ConsumptionEntity(coordinator, InventoryManagerEntityType.MORNING),
+        ConsumptionEntity(coordinator, InventoryManagerEntityType.NOON),
+        ConsumptionEntity(coordinator, InventoryManagerEntityType.EVENING),
+        ConsumptionEntity(coordinator, InventoryManagerEntityType.NIGHT),
     ]
 
     async_add_entities(entities, update_before_add=False)
@@ -69,7 +73,9 @@ async def async_setup_entry(
         platform.async_register_entity_service(
             SERVICE_CONSUME,
             {
-                vol.Exclusive(SERVICE_AMOUNT, SERVICE_AMOUNT_SPECIFICATION): cv.Number,
+                vol.Exclusive(
+                    SERVICE_AMOUNT, SERVICE_AMOUNT_SPECIFICATION
+                ): cv.positive_int,
                 vol.Exclusive(
                     SERVICE_PREDEFINED_AMOUNT, SERVICE_AMOUNT_SPECIFICATION
                 ): cv.string,
@@ -78,7 +84,7 @@ async def async_setup_entry(
         )
 
 
-class InventoryNumber(RestoreNumber, metaclass=ABCMeta):
+class InventoryNumber(InventoryManagerEntity, RestoreNumber, metaclass=ABCMeta):
     """
     Represents a numeric entity.
 
@@ -89,19 +95,15 @@ class InventoryNumber(RestoreNumber, metaclass=ABCMeta):
 
     def __init__(
         self,
-        hass: core.HomeAssistant,
         item: InventoryManagerItem,
         entity_type: InventoryManagerEntityType,
     ) -> None:
         """Create a new number entity."""
-        super().__init__()
-        self.hass: core.HomeAssistant = hass
-        self.item: InventoryManagerItem = item
-        self.device_info: DeviceInfo = item.device_info
+        super().__init__(item)
         self.entity_type: InventoryManagerEntityType = entity_type
 
         # register self with the item object
-        self.item.entity[entity_type] = self
+        self.coordinator.entity[entity_type] = self
 
         entity_config: dict = item.entity_config[entity_type]
         self.entity_id: str = entity_config[ENTITY_ID]
@@ -115,12 +117,12 @@ class InventoryNumber(RestoreNumber, metaclass=ABCMeta):
     @property
     def native_value(self) -> float:
         """The native value."""
-        return self.item.get(self.entity_type)
+        return self.coordinator.get(self.entity_type)
 
     @native_value.setter
     def native_value(self, value: float) -> None:
         _LOGGER.debug("Setting native value of %s to %2.1f.", self.entity_id, value)
-        self.item.set(self.entity_type, value)
+        self.coordinator.set(self.entity_type, value)
 
     def set_native_value(self, value: float) -> None:
         """Set the native value."""
@@ -158,13 +160,14 @@ class ConsumptionEntity(InventoryNumber):
 
     def __init__(
         self,
-        hass: core.HomeAssistant,
-        config: InventoryManagerItem,
+        coordinator: InventoryManagerItem,
         time: InventoryManagerEntityType,
     ) -> None:
         """Create a new consumption entity."""
-        super().__init__(hass, config, time)
-        self.native_max_value = float(config.data.get(CONF_ITEM_MAX_CONSUMPTION, 5))
+        super().__init__(coordinator, time)
+        self.native_max_value = float(
+            coordinator.data.get(CONF_ITEM_MAX_CONSUMPTION, 5)
+        )
         self.icon = "mdi:pill-multiple"
         self.entity_category = EntityCategory.CONFIG
 
@@ -172,10 +175,10 @@ class ConsumptionEntity(InventoryNumber):
 class SupplyEntity(InventoryNumber):
     """Represents the supply of the current item."""
 
-    def __init__(self, hass: core.HomeAssistant, pill: InventoryManagerItem) -> None:
+    def __init__(self, coordinator: InventoryManagerItem) -> None:
         """Create a new suppy entity."""
         _LOGGER.debug("Initializing SupplyEntity")
-        super().__init__(hass, pill, InventoryManagerEntityType.SUPPLY)
+        super().__init__(coordinator, InventoryManagerEntityType.SUPPLY)
         self.native_max_value = 1000000
         self.icon = "mdi:medication"
 
@@ -196,7 +199,7 @@ class SupplyEntity(InventoryNumber):
                 "Calling service 'consume' with predefined amount %s",
                 call.data[SERVICE_PREDEFINED_AMOUNT],
             )
-            self.item.take_dose(
+            self.coordinator.take_dose(
                 InventoryManagerEntityType[call.data[SERVICE_PREDEFINED_AMOUNT].upper()]
             )
         elif SERVICE_AMOUNT in call.data:
@@ -204,4 +207,4 @@ class SupplyEntity(InventoryNumber):
                 "Calling service 'consume' with amount %f",
                 call.data[SERVICE_AMOUNT],
             )
-            self.item.take_number(call.data[SERVICE_AMOUNT])
+            self.coordinator.take_number(call.data[SERVICE_AMOUNT])
