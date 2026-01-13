@@ -20,6 +20,15 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 
+
+def _build_entry_title(data: dict[str, Any]) -> str:
+    """Build entry title from configuration data."""
+    title = data.get(CONF_ITEM_NAME, "")
+    if data.get(CONF_ITEM_SIZE):
+        title += " " + str(data[CONF_ITEM_SIZE])
+    return title
+
+
 PILL_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_ITEM_NAME): cv.string,
@@ -31,8 +40,6 @@ PILL_SCHEMA = vol.Schema(
         vol.Required(CONF_SENSOR_BEFORE_EMPTY, default=10): cv.positive_int,
     }
 )
-# TODO: Add validation to ensure max consumption is a number if provided.
-# TODO: Add option to change options after initial setup.
 # TODO: Add option to select platforms to enable/disable.
 
 
@@ -44,6 +51,17 @@ class InventoryConfigFlow(ConfigFlow, domain=DOMAIN):
 
     data: dict[str, Any] | None
 
+    @staticmethod
+    @callback
+    def async_get_options_flow(
+        config_entry: config_entries.ConfigEntry,
+    ) -> config_entries.OptionsFlow:
+        """Get the options flow for this handler."""
+        return InventoryOptionsFlowHandler()
+
+    async def async_step_user(
+        self, user_input: dict[str, Any] | None = None
+    ) -> config_entries.ConfigFlowResult:
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
@@ -53,14 +71,68 @@ class InventoryConfigFlow(ConfigFlow, domain=DOMAIN):
             # Input is valid, set data.
             self.data = user_input
             # Return the form of the next step.
-            title = self.data[CONF_ITEM_NAME]
-            if CONF_ITEM_SIZE in self.data:
-                title += " " + self.data.get(CONF_ITEM_SIZE, "")
             return self.async_create_entry(
-                title=title,
+                title=_build_entry_title(self.data),
                 data=self.data,
             )
 
         return self.async_show_form(
             step_id="user", data_schema=PILL_SCHEMA, errors=errors
         )
+
+
+class InventoryOptionsFlowHandler(config_entries.OptionsFlow):
+    """Handle options flow for Inventory Manager."""
+
+    async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> config_entries.ConfigFlowResult:
+        """Manage the options."""
+        if user_input is not None:
+            # Update config entry with new data (merging with existing)
+            self.hass.config_entries.async_update_entry(
+                self.config_entry,
+                title=_build_entry_title(user_input),
+                data={**self.config_entry.data, **user_input},
+            )
+            # Return empty entry to signal completion (data is already saved above)
+            return self.async_create_entry(title="", data={})
+
+        # Get current values from config entry
+        current_data = self.config_entry.data
+
+        # Create schema with current values as defaults
+        options_schema = vol.Schema(
+            {
+                vol.Required(
+                    CONF_ITEM_NAME,
+                    default=current_data.get(CONF_ITEM_NAME, ""),
+                ): cv.string,
+                vol.Optional(
+                    CONF_ITEM_SIZE,
+                    default=current_data.get(CONF_ITEM_SIZE),
+                ): cv.positive_int,
+                vol.Required(
+                    CONF_ITEM_UNIT,
+                    default=current_data.get(CONF_ITEM_UNIT, ""),
+                ): cv.string,
+                vol.Optional(
+                    CONF_ITEM_AGENT,
+                    default=current_data.get(CONF_ITEM_AGENT, ""),
+                ): cv.string,
+                vol.Optional(
+                    CONF_ITEM_VENDOR,
+                    default=current_data.get(CONF_ITEM_VENDOR, ""),
+                ): cv.string,
+                vol.Optional(
+                    CONF_ITEM_MAX_CONSUMPTION,
+                    default=current_data.get(CONF_ITEM_MAX_CONSUMPTION, 5.0),
+                ): cv.positive_float,
+                vol.Required(
+                    CONF_SENSOR_BEFORE_EMPTY,
+                    default=current_data.get(CONF_SENSOR_BEFORE_EMPTY, 10),
+                ): cv.positive_int,
+            }
+        )
+
+        return self.async_show_form(step_id="init", data_schema=options_schema)
