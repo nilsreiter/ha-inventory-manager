@@ -1,4 +1,4 @@
-"""constants for inventory manager."""
+"""Constants for inventory manager."""
 
 DOMAIN = "inventory_manager"
 

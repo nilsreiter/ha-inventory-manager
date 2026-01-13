@@ -25,8 +25,7 @@ class InventoryManagerItem(DataUpdateCoordinator):
     def __init__(
         self, config_entry: InventoryManagerConfigEntry, *args: Any, **kwargs: Any
     ) -> None:
-        """
-        Create a new item coordinator.
+        """Create a new item coordinator.
 
         Args:
             config_entry: The configuration entry for this item.
@@ -35,7 +34,6 @@ class InventoryManagerItem(DataUpdateCoordinator):
 
         """
         super().__init__(*args, **kwargs)
-        """Create a new item."""
         self._numbers = {}
         self.config_entry = config_entry
 
