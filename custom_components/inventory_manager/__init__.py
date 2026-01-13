@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from datetime import timedelta
 import logging
+from datetime import timedelta
 from re import A
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Any
@@ -75,4 +75,22 @@ async def async_setup_entry(
     # )
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
+    # Register update listener to handle option changes
+    entry.async_on_unload(entry.add_update_listener(async_reload_entry))
+
     return True
+
+
+async def async_unload_entry(
+    hass: core.HomeAssistant, entry: InventoryManagerConfigEntry
+) -> bool:
+    """Unload a config entry."""
+    return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+
+
+async def async_reload_entry(
+    hass: core.HomeAssistant, entry: InventoryManagerConfigEntry
+) -> None:
+    """Reload config entry when options change."""
+    await hass.config_entries.async_reload(entry.entry_id)
+
