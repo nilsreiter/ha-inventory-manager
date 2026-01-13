@@ -5,7 +5,7 @@ from typing import Any
 
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
-from homeassistant import config_entries
+from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
 
 from .const import (
     CONF_ITEM_AGENT,
@@ -36,7 +36,7 @@ PILL_SCHEMA = vol.Schema(
 # TODO: Add option to select platforms to enable/disable.
 
 
-class InventoryConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+class InventoryConfigFlow(ConfigFlow, domain=DOMAIN):
     """Github Custom config flow."""
 
     VERSION = 1
@@ -44,9 +44,10 @@ class InventoryConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     data: dict[str, Any] | None
 
-    async def async_step_user(self, user_input: dict[str, Any] | None = None):
+    async def async_step_user(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
         """Bla."""
-
         errors: dict[str, str] = {}
         if user_input is not None:
             # Input is valid, set data.
