@@ -150,7 +150,10 @@ class InventoryNumber(InventoryManagerEntity, RestoreNumber):
         self.entity_description = description
 
         if description.entity_type is None:
-            msg = "entity_type must be specified in the entity description"
+            msg = (
+                f"entity_type must be specified in the entity description "
+                f"(key: {description.key})"
+            )
             raise ValueError(msg)
 
         self.entity_type: InventoryManagerEntityType = description.entity_type
