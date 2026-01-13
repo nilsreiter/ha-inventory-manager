@@ -7,10 +7,15 @@ The sensor predicts when we run out of supplies.
 from __future__ import annotations
 
 import logging
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
 
-from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
+from homeassistant.components.sensor import (
+    SensorDeviceClass,
+    SensorEntity,
+    SensorEntityDescription,
+)
 from homeassistant.helpers import entity_platform
 from homeassistant.util.dt import now
 
@@ -32,28 +37,52 @@ if TYPE_CHECKING:
 _LOGGER = logging.getLogger(__name__)
 
 
+@dataclass(frozen=True, kw_only=True)
+class InventoryManagerSensorEntityDescription(SensorEntityDescription):
+    """Describes Inventory Manager sensor entity."""
+
+
+SENSOR_TYPES: tuple[InventoryManagerSensorEntityDescription, ...] = (
+    InventoryManagerSensorEntityDescription(
+        key="supply_empty",
+        translation_key=STRING_SENSOR_ENTITY,
+        device_class=SensorDeviceClass.TIMESTAMP,
+        has_entity_name=True,
+    ),
+)
+
+
 async def async_setup_entry(
-    hass: HomeAssistant,
+    _hass: HomeAssistant,
     config_entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up sensors from a config entry created in the integrations UI."""
-    sensors = [EmptyPredictionSensor(config_entry.runtime_data.coordinator)]
+    sensors = [
+        EmptyPredictionSensor(
+            config_entry.runtime_data.coordinator,
+            description,
+        )
+        for description in SENSOR_TYPES
+    ]
     async_add_entities(sensors, update_before_add=True)
 
 
 class EmptyPredictionSensor(InventoryManagerEntity, SensorEntity):
     """Represents a sensor to predict when we run out of supplies."""
 
-    _attr_has_entity_name = True
-    _attr_name = "Supply empty"
+    entity_description: InventoryManagerSensorEntityDescription
 
     _attr_should_poll = False
-    _attr_device_class = SensorDeviceClass.TIMESTAMP
 
-    def __init__(self, item: InventoryManagerItem) -> None:
+    def __init__(
+        self,
+        item: InventoryManagerItem,
+        description: InventoryManagerSensorEntityDescription,
+    ) -> None:
         """Construct a new EmptyPredictionSensor."""
         super().__init__(item)
+        self.entity_description = description
         _LOGGER.debug("Initializing EmptyPredictionSensor")
 
         self.platform = entity_platform.async_get_current_platform()
@@ -69,9 +98,6 @@ class EmptyPredictionSensor(InventoryManagerEntity, SensorEntity):
         self._attr_extra_state_attributes = {}
         self.entity_id = entity_config[ENTITY_ID]
         self._attr_native_value: datetime = now() + timedelta(days=10000)
-
-        self.device_class = SensorDeviceClass.TIMESTAMP
-        self.translation_key = STRING_SENSOR_ENTITY
 
     def update(self) -> None:
         """Recalculate the remaining time until supply is empty."""
