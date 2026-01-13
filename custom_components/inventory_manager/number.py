@@ -42,10 +42,6 @@ if TYPE_CHECKING:
 
 _LOGGER = logging.getLogger(__name__)
 
-# Hack: This value is used to allow restriction of target entity in service call
-# because apparently custom features are not possible.
-_SUPPLY_SUPPORTED_FEATURES = 4  # LightEntityFeature.EFFECT
-
 
 @dataclass(frozen=True, kw_only=True)
 class InventoryManagerNumberEntityDescription(NumberEntityDescription):
@@ -214,13 +210,13 @@ class InventoryNumber(InventoryManagerEntity, RestoreNumber):
     @property
     def supported_features(self) -> int:
         """
-        Return feature flags for supply entity.
+        Return 4.
 
         This is a hack, because apparently custom features are not possible.
         This is only used to allow restriction of target entity in service call.
         """
         if self.entity_type == InventoryManagerEntityType.SUPPLY:
-            return _SUPPLY_SUPPORTED_FEATURES
+            return 4  # LightEntityFeature.EFFECT
         return 0
 
     def take(self, call: core.ServiceCall) -> None:
