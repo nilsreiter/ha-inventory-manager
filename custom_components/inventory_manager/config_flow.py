@@ -21,6 +21,15 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 
+
+def _build_entry_title(data: dict[str, Any]) -> str:
+    """Build entry title from configuration data."""
+    title = data.get(CONF_ITEM_NAME, "")
+    if data.get(CONF_ITEM_SIZE):
+        title += " " + data[CONF_ITEM_SIZE]
+    return title
+
+
 PILL_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_ITEM_NAME): cv.string,
@@ -61,11 +70,8 @@ class InventoryConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             # Input is valid, set data.
             self.data = user_input
             # Return the form of the next step.
-            title = self.data[CONF_ITEM_NAME]
-            if CONF_ITEM_SIZE in self.data:
-                title += " " + self.data.get(CONF_ITEM_SIZE, "")
             return self.async_create_entry(
-                title=title,
+                title=_build_entry_title(self.data),
                 data=self.data,
             )
 
@@ -82,17 +88,13 @@ class InventoryOptionsFlowHandler(config_entries.OptionsFlow):
     ) -> config_entries.ConfigFlowResult:
         """Manage the options."""
         if user_input is not None:
-            # Store options separately and update config entry title if name changed
-            title = user_input.get(CONF_ITEM_NAME, "")
-            if CONF_ITEM_SIZE in user_input and user_input[CONF_ITEM_SIZE]:
-                title += " " + user_input[CONF_ITEM_SIZE]
-            
             # Update config entry with new data (merging with existing)
             self.hass.config_entries.async_update_entry(
                 self.config_entry,
-                title=title,
+                title=_build_entry_title(user_input),
                 data={**self.config_entry.data, **user_input},
             )
+            # Return empty entry to signal completion (data is already saved above)
             return self.async_create_entry(title="", data={})
 
         # Get current values from config entry
