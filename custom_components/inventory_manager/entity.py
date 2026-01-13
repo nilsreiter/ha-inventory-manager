@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from enum import IntFlag
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from homeassistant.helpers.entity import Entity
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
@@ -32,3 +33,6 @@ class InventoryManagerEntity(CoordinatorEntity, Entity):
         super().__init__(coordinator)
         self._attr_device_info = coordinator.config_entry.runtime_data.device_info
         self.coordinator: InventoryManagerItem = coordinator
+
+    def _handle_coordinator_update(self) -> None:
+        return super()._handle_coordinator_update()

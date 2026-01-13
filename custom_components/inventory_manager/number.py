@@ -87,7 +87,9 @@ async def async_setup_entry(
         platform.async_register_entity_service(
             SERVICE_STORE,
             {
-                vol.Required(SERVICE_AMOUNT, SERVICE_AMOUNT_SPECIFICATION): cv.Number,
+                vol.Required(
+                    SERVICE_AMOUNT, SERVICE_AMOUNT_SPECIFICATION
+                ): cv.positive_int,
             },
             lambda target, payload: target.store(payload),
         )
@@ -222,3 +224,7 @@ class SupplyEntity(InventoryNumber):
                 call.data[SERVICE_AMOUNT],
             )
             self.coordinator.take_number(call.data[SERVICE_AMOUNT])
+
+    def store(self, call: core.ServiceCall) -> None:
+        """Execute the service call to store additional supplies."""
+        self.coordinator.take_number(-1 * call.data[SERVICE_AMOUNT])
