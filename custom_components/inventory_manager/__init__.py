@@ -4,25 +4,17 @@ from __future__ import annotations
 
 import logging
 from datetime import timedelta
-from re import A
-from types import MappingProxyType
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from homeassistant.const import Platform
-from homeassistant.helpers import device_registry
 from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
-from homeassistant.helpers.entity import generate_entity_id
 
 from .const import (
     CONF_ITEM_NAME,
     CONF_ITEM_SIZE,
     CONF_ITEM_VENDOR,
     DOMAIN,
-    ENTITY_ID,
-    ENTITY_TYPE,
     SPACE,
-    UNDERSCORE,
-    UNIQUE_ID,
 )
 from .coordinator import InventoryManagerItem
 from .data import (
@@ -65,14 +57,6 @@ async def async_setup_entry(
         coordinator=coordinator,
     )
 
-    # dr.async_get_or_create(
-    #     config_entry_id=entry.entry_id,
-    #     entry_type=item.device_info["entry_type"],
-    #     manufacturer=item.device_info["manufacturer"],
-    #     model=friendly_name,
-    #     name=friendly_name,
-    #     identifiers=item.device_info["identifiers"],
-    # )
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     # Register update listener to handle option changes

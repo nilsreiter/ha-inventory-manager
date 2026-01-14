@@ -1,5 +1,4 @@
-"""constants for inventory manager."""
-import datetime
+"""Constants for inventory manager."""
 
 DOMAIN = "inventory_manager"
 
