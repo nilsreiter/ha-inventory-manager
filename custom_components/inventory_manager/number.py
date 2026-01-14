@@ -62,6 +62,8 @@ async def async_setup_entry(
         ConsumptionEntity(coordinator, InventoryManagerEntityType.NOON),
         ConsumptionEntity(coordinator, InventoryManagerEntityType.EVENING),
         ConsumptionEntity(coordinator, InventoryManagerEntityType.NIGHT),
+        ConsumptionEntity(coordinator, InventoryManagerEntityType.WEEK),
+        ConsumptionEntity(coordinator, InventoryManagerEntityType.MONTH),
     ]
 
     async_add_entities(entities, update_before_add=False)
