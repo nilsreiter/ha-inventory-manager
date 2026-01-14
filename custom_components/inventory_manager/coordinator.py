@@ -1,22 +1,19 @@
+"""Coordinator for Inventory Manager integration."""
+
 import logging
 import uuid
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from homeassistant.helpers.entity import generate_entity_id
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from .const import (
-    CONF_ITEM_NAME,
-    CONF_ITEM_SIZE,
     ENTITY_ID,
     ENTITY_TYPE,
-    SPACE,
     UNDERSCORE,
     UNIQUE_ID,
 )
-from .data import (
-    InventoryManagerConfigEntry,
-)
+from .data import InventoryManagerConfigEntry
 from .entity import InventoryManagerEntityType
 
 _LOGGER = logging.getLogger(__name__)
@@ -26,11 +23,18 @@ class InventoryManagerItem(DataUpdateCoordinator):
     """The class represents the item data itself."""
 
     def __init__(
-        self, config_entry: InventoryManagerConfigEntry, *args, **kwargs
+        self, config_entry: InventoryManagerConfigEntry, *args: Any, **kwargs: Any
     ) -> None:
+        """
+        Create a new item coordinator.
+
+        Args:
+            config_entry: The configuration entry for this item.
+            *args: Additional positional arguments passed to DataUpdateCoordinator.
+            **kwargs: Additional keyword arguments passed to DataUpdateCoordinator.
+
+        """
         super().__init__(*args, **kwargs)
-        """Create a new item."""
-        self.data = dict(config_entry.data)
         self._numbers = {}
         self.config_entry = config_entry
 
@@ -69,6 +73,8 @@ class InventoryManagerItem(DataUpdateCoordinator):
             InventoryManagerEntityType.NOON,
             InventoryManagerEntityType.EVENING,
             InventoryManagerEntityType.NIGHT,
+            InventoryManagerEntityType.WEEK,
+            InventoryManagerEntityType.MONTH,
         ]:
             _LOGGER.debug("Invalid argument for take_dose: %s", dose)
             return
@@ -123,7 +129,12 @@ class InventoryManagerItem(DataUpdateCoordinator):
                     InventoryManagerEntityType.NIGHT,
                 ]
             )
+            if self.get(InventoryManagerEntityType.WEEK) > 0:
+                s = s + self.get(InventoryManagerEntityType.WEEK) / 7
+            if self.get(InventoryManagerEntityType.MONTH) > 0:
+                s = s + self.get(InventoryManagerEntityType.MONTH) / 28
 
-            return s
         except (KeyError, AttributeError):
             return 0
+        else:
+            return s

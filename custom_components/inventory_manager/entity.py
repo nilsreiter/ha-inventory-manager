@@ -1,3 +1,5 @@
+"""Entity classes for Inventory Manager integration."""
+
 from __future__ import annotations
 
 from enum import IntFlag
@@ -20,6 +22,8 @@ class InventoryManagerEntityType(IntFlag):
     EVENING = 64
     WARNING = 128
     EMPTYPREDICTION = 256
+    WEEK = 512
+    MONTH = 1024
 
 
 class InventoryManagerEntity(CoordinatorEntity, Entity):
@@ -30,3 +34,6 @@ class InventoryManagerEntity(CoordinatorEntity, Entity):
         super().__init__(coordinator)
         self._attr_device_info = coordinator.config_entry.runtime_data.device_info
         self.coordinator: InventoryManagerItem = coordinator
+
+    def _handle_coordinator_update(self) -> None:
+        return super()._handle_coordinator_update()

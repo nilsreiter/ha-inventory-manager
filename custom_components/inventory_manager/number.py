@@ -23,6 +23,7 @@ from .const import (
     SERVICE_AMOUNT_SPECIFICATION,
     SERVICE_CONSUME,
     SERVICE_PREDEFINED_AMOUNT,
+    SERVICE_STORE,
     STRING_EVENING_ENTITY,
     STRING_MORNING_ENTITY,
     STRING_NIGHT_ENTITY,
@@ -130,6 +131,16 @@ async def async_setup_entry(
             lambda target, payload: target.take(payload),
         )
 
+        platform.async_register_entity_service(
+            SERVICE_STORE,
+            {
+                vol.Required(
+                    SERVICE_AMOUNT, SERVICE_AMOUNT_SPECIFICATION
+                ): cv.positive_int,
+            },
+            lambda target, payload: target.store(payload),
+        )
+
 
 class InventoryNumber(InventoryManagerEntity, RestoreNumber):
     """Represents a numeric entity."""
@@ -162,16 +173,18 @@ class InventoryNumber(InventoryManagerEntity, RestoreNumber):
         self.unique_id: str = entity_config[UNIQUE_ID]
 
         self._available: bool = True
-        self.native_unit_of_measurement = item.data.get(CONF_ITEM_UNIT, UNIT_PCS)
-        self.native_step = 0.25
-        self.native_min_value = 0
+        self._attr_native_unit_of_measurement = item.config_entry.data.get(
+            CONF_ITEM_UNIT, UNIT_PCS
+        )
+        self._attr_native_step = 0.25
+        self._attr_native_min_value = 0
 
         # Set max value based on entity type
         if self.entity_type == InventoryManagerEntityType.SUPPLY:
             self.native_max_value = 1000000
         else:
             self.native_max_value = float(
-                item.data.get(CONF_ITEM_MAX_CONSUMPTION, 5)
+                item.config_entry.data.get(CONF_ITEM_MAX_CONSUMPTION, 5)
             )
 
         # Set icon and entity_category from description
@@ -189,10 +202,12 @@ class InventoryNumber(InventoryManagerEntity, RestoreNumber):
     def native_value(self, value: float) -> None:
         _LOGGER.debug("Setting native value of %s to %2.1f.", self.entity_id, value)
         self.coordinator.set(self.entity_type, value)
+        self.schedule_update_ha_state()
 
     def set_native_value(self, value: float) -> None:
         """Set the native value."""
         self.native_value = value
+        self.schedule_update_ha_state()
 
     async def async_added_to_hass(self) -> None:
         """Restore the number from last time."""
@@ -206,6 +221,7 @@ class InventoryNumber(InventoryManagerEntity, RestoreNumber):
                     self.native_value = 0.0
         except AttributeError:
             self.set_native_value(0.0)
+            self.schedule_update_ha_state()
 
     @property
     def supported_features(self) -> int:
@@ -235,3 +251,7 @@ class InventoryNumber(InventoryManagerEntity, RestoreNumber):
                 call.data[SERVICE_AMOUNT],
             )
             self.coordinator.take_number(call.data[SERVICE_AMOUNT])
+
+    def store(self, call: core.ServiceCall) -> None:
+        """Execute the service call to store additional supplies."""
+        self.coordinator.take_number(-1 * call.data[SERVICE_AMOUNT])
