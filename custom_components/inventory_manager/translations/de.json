@@ -43,7 +43,7 @@
           "item_unit": "Die Einheit, in der die Größe gemessen wird. Sollte eine Abkürzung sein, kann aber eine beliebige Zeichenfolge sein. Beispiele: g, l, Stk.",
           "item_max_consumption": "Dient als Maximalwert für die Verbrauchseinstellungen."
         },
-        "description": "Objekt beschreiben",
+        "description": "Beschreiben Sie die Versorgungseinheit, die Sie verfolgen wollen. Am besten ist es, in Einheiten zu denken, die sich leicht zählen und messen lassen. Das können Dosen, Stücke oder Pakete sein.",
         "title": "{name}"
       }
     }

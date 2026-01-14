@@ -137,5 +137,11 @@ class InventoryOptionsFlowHandler(OptionsFlow):
                 ): cv.positive_int,
             }
         )
-
-        return self.async_show_form(step_id="init", data_schema=options_schema)
+        # TODO: Check if translations are complete for options flow.
+        return self.async_show_form(
+            step_id="init",
+            data_schema=options_schema,
+            description_placeholders={
+                "name": current_data.get(CONF_ITEM_NAME, "Item name")
+            },
+        )

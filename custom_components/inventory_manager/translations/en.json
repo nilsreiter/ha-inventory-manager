@@ -44,7 +44,7 @@
           "item_unit": "The unit in which the size is measured. Should be an abbreviation, but can be any string. Examples: g, l, pcs.",
           "item_max_consumption": "Serves as the maximal setting for the consumption settings."
         },
-        "description": "Vendor: {vendor}, Agent: {agent}",
+        "description": "Describe the supply unit you want to track. It's best to think in units that can easily be counted and measured. These can be cans, pieces or packages.",
         "title": "{name}"
       }
     }
