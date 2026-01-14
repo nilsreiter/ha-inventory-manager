@@ -3,13 +3,13 @@
 from __future__ import annotations
 
 import logging
-from abc import ABCMeta
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
 from homeassistant import config_entries, core
-from homeassistant.components.number import RestoreNumber
+from homeassistant.components.number import NumberEntityDescription, RestoreNumber
 from homeassistant.const import EntityCategory
 from homeassistant.helpers import entity_platform
 
@@ -44,8 +44,59 @@ if TYPE_CHECKING:
 _LOGGER = logging.getLogger(__name__)
 
 
+@dataclass(frozen=True, kw_only=True)
+class InventoryManagerNumberEntityDescription(NumberEntityDescription):
+    """Describes Inventory Manager number entity."""
+
+    entity_type: InventoryManagerEntityType | None = None
+    icon_override: str | None = None
+    entity_category_override: EntityCategory | None = None
+
+
 # TODO: Add option to change number parameters (min, max, step) from config flow.
-# TODO: Use EntityDescription for number entities.
+NUMBER_TYPES: tuple[InventoryManagerNumberEntityDescription, ...] = (
+    InventoryManagerNumberEntityDescription(
+        key="supply",
+        translation_key=STRING_SUPPLY_ENTITY,
+        has_entity_name=True,
+        entity_type=InventoryManagerEntityType.SUPPLY,
+        icon_override="mdi:medication",
+    ),
+    InventoryManagerNumberEntityDescription(
+        key="morning",
+        translation_key=STRING_MORNING_ENTITY,
+        has_entity_name=True,
+        entity_type=InventoryManagerEntityType.MORNING,
+        icon_override="mdi:pill-multiple",
+        entity_category_override=EntityCategory.CONFIG,
+    ),
+    InventoryManagerNumberEntityDescription(
+        key="noon",
+        translation_key=STRING_NOON_ENTITY,
+        has_entity_name=True,
+        entity_type=InventoryManagerEntityType.NOON,
+        icon_override="mdi:pill-multiple",
+        entity_category_override=EntityCategory.CONFIG,
+    ),
+    InventoryManagerNumberEntityDescription(
+        key="evening",
+        translation_key=STRING_EVENING_ENTITY,
+        has_entity_name=True,
+        entity_type=InventoryManagerEntityType.EVENING,
+        icon_override="mdi:pill-multiple",
+        entity_category_override=EntityCategory.CONFIG,
+    ),
+    InventoryManagerNumberEntityDescription(
+        key="night",
+        translation_key=STRING_NIGHT_ENTITY,
+        has_entity_name=True,
+        entity_type=InventoryManagerEntityType.NIGHT,
+        icon_override="mdi:pill-multiple",
+        entity_category_override=EntityCategory.CONFIG,
+    ),
+)
+
+
 async def async_setup_entry(
     hass: core.HomeAssistant,
     config_entry: config_entries.ConfigEntry,
@@ -57,13 +108,7 @@ async def async_setup_entry(
 
     # Create numeric entities
     entities = [
-        SupplyEntity(coordinator),
-        ConsumptionEntity(coordinator, InventoryManagerEntityType.MORNING),
-        ConsumptionEntity(coordinator, InventoryManagerEntityType.NOON),
-        ConsumptionEntity(coordinator, InventoryManagerEntityType.EVENING),
-        ConsumptionEntity(coordinator, InventoryManagerEntityType.NIGHT),
-        ConsumptionEntity(coordinator, InventoryManagerEntityType.WEEK),
-        ConsumptionEntity(coordinator, InventoryManagerEntityType.MONTH),
+        InventoryNumber(coordinator, description) for description in NUMBER_TYPES
     ]
 
     async_add_entities(entities, update_before_add=False)
@@ -97,28 +142,33 @@ async def async_setup_entry(
         )
 
 
-class InventoryNumber(InventoryManagerEntity, RestoreNumber, metaclass=ABCMeta):
-    """
-    Represents a numeric entity.
+class InventoryNumber(InventoryManagerEntity, RestoreNumber):
+    """Represents a numeric entity."""
 
-    Abstract base class for several entities.
-    """
-
-    _attr_has_entity_name = True
+    entity_description: InventoryManagerNumberEntityDescription
 
     def __init__(
         self,
         item: InventoryManagerItem,
-        entity_type: InventoryManagerEntityType,
+        description: InventoryManagerNumberEntityDescription,
     ) -> None:
         """Create a new number entity."""
         super().__init__(item)
-        self.entity_type: InventoryManagerEntityType = entity_type
+        self.entity_description = description
+
+        if description.entity_type is None:
+            msg = (
+                f"entity_type must be specified in the entity description "
+                f"(key: {description.key})"
+            )
+            raise ValueError(msg)
+
+        self.entity_type: InventoryManagerEntityType = description.entity_type
 
         # register self with the item object
-        self.coordinator.entity[entity_type] = self
+        self.coordinator.entity[self.entity_type] = self
 
-        entity_config: dict = item.entity_config[entity_type]
+        entity_config: dict = item.entity_config[self.entity_type]
         self.entity_id: str = entity_config[ENTITY_ID]
         self.unique_id: str = entity_config[UNIQUE_ID]
 
@@ -128,6 +178,20 @@ class InventoryNumber(InventoryManagerEntity, RestoreNumber, metaclass=ABCMeta):
         )
         self._attr_native_step = 0.25
         self._attr_native_min_value = 0
+
+        # Set max value based on entity type
+        if self.entity_type == InventoryManagerEntityType.SUPPLY:
+            self.native_max_value = 1000000
+        else:
+            self.native_max_value = float(
+                item.config_entry.data.get(CONF_ITEM_MAX_CONSUMPTION, 5)
+            )
+
+        # Set icon and entity_category from description
+        if description.icon_override:
+            self.icon = description.icon_override
+        if description.entity_category_override:
+            self.entity_category = description.entity_category_override
 
     @property
     def native_value(self) -> float:
@@ -160,47 +224,6 @@ class InventoryNumber(InventoryManagerEntity, RestoreNumber, metaclass=ABCMeta):
             self.schedule_update_ha_state()
 
     @property
-    def translation_key(self) -> str:
-        """Return the translation key."""
-        if self.entity_type == InventoryManagerEntityType.MORNING:
-            return STRING_MORNING_ENTITY
-        if self.entity_type == InventoryManagerEntityType.NOON:
-            return STRING_NOON_ENTITY
-        if self.entity_type == InventoryManagerEntityType.EVENING:
-            return STRING_EVENING_ENTITY
-        if self.entity_type == InventoryManagerEntityType.NIGHT:
-            return STRING_NIGHT_ENTITY
-        return STRING_SUPPLY_ENTITY
-
-
-class ConsumptionEntity(InventoryNumber):
-    """Represents the dose consumed at a certain time during the day."""
-
-    def __init__(
-        self,
-        coordinator: InventoryManagerItem,
-        time: InventoryManagerEntityType,
-    ) -> None:
-        """Create a new consumption entity."""
-        super().__init__(coordinator, time)
-        self.native_max_value = float(
-            coordinator.config_entry.data.get(CONF_ITEM_MAX_CONSUMPTION, 5)
-        )
-        self.icon = "mdi:pill-multiple"
-        self.entity_category = EntityCategory.CONFIG
-
-
-class SupplyEntity(InventoryNumber):
-    """Represents the supply of the current item."""
-
-    def __init__(self, coordinator: InventoryManagerItem) -> None:
-        """Create a new suppy entity."""
-        _LOGGER.debug("Initializing SupplyEntity")
-        super().__init__(coordinator, InventoryManagerEntityType.SUPPLY)
-        self.native_max_value = 1000000
-        self.icon = "mdi:medication"
-
-    @property
     def supported_features(self) -> int:
         """
         Return 4.
@@ -208,7 +231,9 @@ class SupplyEntity(InventoryNumber):
         This is a hack, because apparently custom features are not possible.
         This is only used to allow restriction of target entity in service call.
         """
-        return 4  # LightEntityFeature.EFFECT
+        if self.entity_type == InventoryManagerEntityType.SUPPLY:
+            return 4  # LightEntityFeature.EFFECT
+        return 0
 
     def take(self, call: core.ServiceCall) -> None:
         """Execute the consume service call."""
