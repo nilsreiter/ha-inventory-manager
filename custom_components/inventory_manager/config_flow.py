@@ -138,7 +138,6 @@ class InventoryOptionsFlowHandler(OptionsFlow):
                 ): cv.positive_int,
             }
         )
-        # TODO: Check if translations are complete for options flow.
         return self.async_show_form(
             step_id="init",
             data_schema=options_schema,
