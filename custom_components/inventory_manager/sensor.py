@@ -68,7 +68,6 @@ async def async_setup_entry(
     async_add_entities(sensors, update_before_add=True)
 
 
-# TODO: Sensor needs to be refreshed after initial setup to get correct value.
 class EmptyPredictionSensor(InventoryManagerEntity, SensorEntity):
     """Represents a sensor to predict when we run out of supplies."""
 
@@ -99,6 +98,11 @@ class EmptyPredictionSensor(InventoryManagerEntity, SensorEntity):
         self._attr_extra_state_attributes = {}
         self.entity_id = entity_config[ENTITY_ID]
         self._attr_native_value: datetime = now() + timedelta(days=10000)
+
+    async def async_added_to_hass(self) -> None:
+        """Call update to get initial state after entity is added."""
+        await super().async_added_to_hass()
+        self.update()
 
     def update(self) -> None:
         """Recalculate the remaining time until supply is empty."""
