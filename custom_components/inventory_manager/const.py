@@ -10,7 +10,6 @@ CONF_ITEM_SIZE = "item_size"
 CONF_ITEM_VENDOR = "item_vendor"
 CONF_ITEM_MAX_CONSUMPTION = "item_max_consumption"
 CONF_SENSOR_BEFORE_EMPTY = "warning_days_before_empty"
-CONF_PILLS = "pills"
 CONF_ITEM_AGENT = "item_agent"
 CONF_ITEM_UNIT = "item_unit"
 
