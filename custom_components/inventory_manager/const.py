@@ -13,6 +13,7 @@ CONF_SENSOR_BEFORE_EMPTY = "warning_days_before_empty"
 CONF_PILLS = "pills"
 CONF_ITEM_AGENT = "item_agent"
 CONF_ITEM_UNIT = "item_unit"
+CONF_ENABLED_PLATFORMS = "enabled_platforms"
 
 UNIT_PCS = "pcs."
 

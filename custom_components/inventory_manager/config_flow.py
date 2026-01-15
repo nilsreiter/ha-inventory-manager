@@ -11,9 +11,11 @@ from homeassistant.config_entries import (
     ConfigFlowResult,
     OptionsFlow,
 )
+from homeassistant.const import Platform
 from homeassistant.core import callback
 
 from .const import (
+    CONF_ENABLED_PLATFORMS,
     CONF_ITEM_AGENT,
     CONF_ITEM_MAX_CONSUMPTION,
     CONF_ITEM_NAME,
@@ -25,6 +27,9 @@ from .const import (
 )
 
 _LOGGER = logging.getLogger(__name__)
+
+# Default platforms to enable
+DEFAULT_PLATFORMS = [Platform.NUMBER, Platform.SENSOR, Platform.BINARY_SENSOR]
 
 
 def _build_entry_title(data: dict[str, Any]) -> str:
@@ -45,9 +50,17 @@ INVENTORY_MANAGER_SCHEMA = vol.Schema(
         vol.Optional(CONF_ITEM_UNIT): cv.string,
         vol.Optional(CONF_ITEM_AGENT): cv.string,
         vol.Optional(CONF_ITEM_VENDOR): cv.string,
+        vol.Optional(
+            CONF_ENABLED_PLATFORMS, default=DEFAULT_PLATFORMS
+        ): cv.multi_select(
+            {
+                Platform.NUMBER: Platform.NUMBER,
+                Platform.SENSOR: Platform.SENSOR,
+                Platform.BINARY_SENSOR: Platform.BINARY_SENSOR,
+            }
+        ),
     }
 )
-# TODO: Add option to select platforms to enable/disable.
 
 
 class InventoryConfigFlow(ConfigFlow, domain=DOMAIN):
@@ -136,6 +149,16 @@ class InventoryOptionsFlowHandler(OptionsFlow):
                     CONF_SENSOR_BEFORE_EMPTY,
                     default=current_data.get(CONF_SENSOR_BEFORE_EMPTY, 10),
                 ): cv.positive_int,
+                vol.Optional(
+                    CONF_ENABLED_PLATFORMS,
+                    default=current_data.get(CONF_ENABLED_PLATFORMS, DEFAULT_PLATFORMS),
+                ): cv.multi_select(
+                    {
+                        Platform.NUMBER: Platform.NUMBER,
+                        Platform.SENSOR: Platform.SENSOR,
+                        Platform.BINARY_SENSOR: Platform.BINARY_SENSOR,
+                    }
+                ),
             }
         )
         # TODO: Check if translations are complete for options flow.

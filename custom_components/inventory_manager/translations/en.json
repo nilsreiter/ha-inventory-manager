@@ -14,7 +14,8 @@
           "item_agent": "Agent name",
           "item_max_consumption": "Maximal consumption",
           "item_vendor": "Vendor",
-          "warning_days_before_empty": "Advanced warning in days"
+          "warning_days_before_empty": "Advanced warning in days",
+          "enabled_platforms": "Enabled platforms"
         },
         "data_description": {
           "item_name": "A descriptive name for the item you want to track.",
@@ -23,7 +24,8 @@
           "item_agent": "Optional.",
           "item_vendor": "Optional.",
           "item_max_consumption": "The maximum amount of items that can be consumed in one go.",
-          "warning_days_before_empty": "A binary sensor will be created that is active that many days before supply is empty."
+          "warning_days_before_empty": "A binary sensor will be created that is active that many days before supply is empty.",
+          "enabled_platforms": "Select which platforms to enable. Number entities track supply and consumption. Sensor entities predict when supply will be empty. Binary sensor entities warn when running low."
         },
         "description": "Describe the supply unit you want to track. It's best to think in units that can easily be counted and measured. These can be cans, pieces or packages.",
         "title": "Track Supply"
@@ -39,7 +41,8 @@
           "item_unit": "Unit (e.g., g)",
           "item_vendor": "Vendor",
           "item_max_consumption": "Maximal consumption",
-          "warning_days_before_empty": "Advanced warning (in days)"
+          "warning_days_before_empty": "Advanced warning (in days)",
+          "enabled_platforms": "Enabled platforms"
         },
         "data_description": {
           "item_size": "Enter something that's measureable",
@@ -47,7 +50,8 @@
           "item_max_consumption": "Serves as the maximal setting for the consumption settings.",
           "item_agent": "The active component in medication.",
           "item_vendor": "The company that produces the item.",
-          "warning_days_before_empty": "A binary sensor will be created that is active that many days before supply is empty."
+          "warning_days_before_empty": "A binary sensor will be created that is active that many days before supply is empty.",
+          "enabled_platforms": "Select which platforms to enable. Number entities track supply and consumption. Sensor entities predict when supply will be empty. Binary sensor entities warn when running low."
         },
         "description": "Describe the supply unit you want to track. It's best to think in units that can easily be counted and measured. These can be cans, pieces or packages.",
         "title": "{name}"
@@ -79,6 +83,13 @@
         "night": "Night",
         "week": "Week",
         "month": "Month"
+      }
+    },
+    "enabled_platforms": {
+      "options": {
+        "number": "Number entities (Supply tracking)",
+        "sensor": "Sensor entities (Empty prediction)",
+        "binary_sensor": "Binary sensor entities (Low supply warning)"
       }
     }
   },

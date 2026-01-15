@@ -10,6 +10,7 @@ from homeassistant.const import Platform
 from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 
 from .const import (
+    CONF_ENABLED_PLATFORMS,
     CONF_ITEM_NAME,
     CONF_ITEM_SIZE,
     CONF_ITEM_VENDOR,
@@ -56,7 +57,9 @@ async def async_setup_entry(
         coordinator=coordinator,
     )
 
-    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    # Use enabled platforms from config, or all platforms if not specified
+    enabled_platforms = entry.data.get(CONF_ENABLED_PLATFORMS, PLATFORMS)
+    await hass.config_entries.async_forward_entry_setups(entry, enabled_platforms)
 
     # Register update listener to handle option changes
     entry.async_on_unload(entry.add_update_listener(async_reload_entry))
@@ -68,7 +71,9 @@ async def async_unload_entry(
     hass: core.HomeAssistant, entry: InventoryManagerConfigEntry
 ) -> bool:
     """Unload a config entry."""
-    return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+    # Use enabled platforms from config, or all platforms if not specified
+    enabled_platforms = entry.data.get(CONF_ENABLED_PLATFORMS, PLATFORMS)
+    return await hass.config_entries.async_unload_platforms(entry, enabled_platforms)
 
 
 async def async_reload_entry(
