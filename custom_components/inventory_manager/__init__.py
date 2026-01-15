@@ -32,7 +32,6 @@ _LOGGER = logging.getLogger(__name__)
 PLATFORMS: list[str] = [Platform.NUMBER, Platform.SENSOR, Platform.BINARY_SENSOR]
 
 
-# TODO: Fix issues with device info creation.
 async def async_setup_entry(
     hass: core.HomeAssistant, entry: InventoryManagerConfigEntry
 ) -> bool:
