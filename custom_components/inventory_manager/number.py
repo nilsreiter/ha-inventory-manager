@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from ast import In
+from calendar import week
 import logging
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
@@ -265,3 +267,11 @@ class InventoryNumber(InventoryManagerEntity, RestoreNumber):
     def store(self, call: core.ServiceCall) -> None:
         """Execute the service call to store additional supplies."""
         self.coordinator.take_number(-1 * call.data[SERVICE_AMOUNT])
+
+    @property
+    def entity_registry_enabled_default(self) -> bool:
+        """Return if the entity should be enabled when first added to the entity registry."""
+        return self.entity_type not in (
+            InventoryManagerEntityType.WEEK,
+            InventoryManagerEntityType.MONTH,
+        )
