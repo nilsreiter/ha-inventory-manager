@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from ast import In
-from calendar import week
 import logging
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
@@ -55,7 +53,6 @@ class InventoryManagerNumberEntityDescription(NumberEntityDescription):
     entity_type: InventoryManagerEntityType | None = None
 
 
-# TODO: Add option to change number parameters (min, max, step) from config flow.
 NUMBER_TYPES: tuple[InventoryManagerNumberEntityDescription, ...] = (
     InventoryManagerNumberEntityDescription(
         key="supply",
