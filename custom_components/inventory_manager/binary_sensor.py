@@ -45,7 +45,6 @@ async def async_setup_entry(
 
 # TODO: Add tests for this entity.
 # TODO: Verify that attributes are correctly set and updated.
-# TODO: Add initial refresh after setup to get correct state.
 class WarnSensor(InventoryManagerEntity, BinarySensorEntity):
     """Represents a warning entity."""
 
@@ -70,6 +69,11 @@ class WarnSensor(InventoryManagerEntity, BinarySensorEntity):
         self.entity_id = item.entity_config[InventoryManagerEntityType.WARNING][
             ENTITY_ID
         ]
+
+    async def async_added_to_hass(self) -> None:
+        """Call update to get initial state after entity is added."""
+        await super().async_added_to_hass()
+        self.update()
 
     def update(self) -> None:
         """Update the state of the entity."""
