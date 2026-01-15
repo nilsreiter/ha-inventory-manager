@@ -36,16 +36,17 @@ def _build_entry_title(data: dict[str, Any]) -> str:
     return title
 
 
-# Create collapsed section for optional fields
+# Define optional fields once to avoid duplication
+_OPTIONAL_FIELDS = {
+    vol.Optional(CONF_ITEM_SIZE): cv.positive_int,
+    vol.Optional(CONF_ITEM_UNIT): cv.string,
+    vol.Optional(CONF_ITEM_AGENT): cv.string,
+    vol.Optional(CONF_ITEM_VENDOR): cv.string,
+}
+
+# Create collapsed section marker for optional fields
 _OPTIONAL_SECTION = section(
-    vol.Schema(
-        {
-            vol.Optional(CONF_ITEM_SIZE): cv.positive_int,
-            vol.Optional(CONF_ITEM_UNIT): cv.string,
-            vol.Optional(CONF_ITEM_AGENT): cv.string,
-            vol.Optional(CONF_ITEM_VENDOR): cv.string,
-        }
-    ),
+    vol.Schema(_OPTIONAL_FIELDS),
     {"collapsed": True},
 )
 
@@ -55,10 +56,7 @@ PILL_SCHEMA = vol.Schema(
         vol.Required(CONF_ITEM_MAX_CONSUMPTION, default=5.0): cv.positive_float,
         vol.Required(CONF_SENSOR_BEFORE_EMPTY, default=10): cv.positive_int,
         _OPTIONAL_SECTION: None,  # Section marker for UI
-        vol.Optional(CONF_ITEM_SIZE): cv.positive_int,
-        vol.Optional(CONF_ITEM_UNIT): cv.string,
-        vol.Optional(CONF_ITEM_AGENT): cv.string,
-        vol.Optional(CONF_ITEM_VENDOR): cv.string,
+        **_OPTIONAL_FIELDS,  # Actual field definitions
     }
 )
 # TODO: Add option to select platforms to enable/disable.
