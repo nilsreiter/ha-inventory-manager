@@ -45,6 +45,7 @@ async def async_setup_entry(
 
 # TODO: Add tests for this entity.
 # TODO: Verify that attributes are correctly set and updated.
+# TODO: Add initial refresh after setup to get correct state.
 class WarnSensor(InventoryManagerEntity, BinarySensorEntity):
     """Represents a warning entity."""
 
