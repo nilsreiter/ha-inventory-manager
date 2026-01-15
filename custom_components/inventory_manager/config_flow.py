@@ -33,9 +33,9 @@ DEFAULT_PLATFORMS = [Platform.NUMBER, Platform.SENSOR, Platform.BINARY_SENSOR]
 
 # Platform selector options
 PLATFORM_SELECTOR_OPTIONS = {
-    Platform.NUMBER.value: Platform.NUMBER,
-    Platform.SENSOR.value: Platform.SENSOR,
-    Platform.BINARY_SENSOR.value: Platform.BINARY_SENSOR,
+    Platform.NUMBER: Platform.NUMBER,
+    Platform.SENSOR: Platform.SENSOR,
+    Platform.BINARY_SENSOR: Platform.BINARY_SENSOR,
 }
 
 
