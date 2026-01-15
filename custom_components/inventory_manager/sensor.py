@@ -7,7 +7,6 @@ The sensor predicts when we run out of supplies.
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
 
@@ -37,13 +36,8 @@ if TYPE_CHECKING:
 _LOGGER = logging.getLogger(__name__)
 
 
-@dataclass(frozen=True, kw_only=True)
-class InventoryManagerSensorEntityDescription(SensorEntityDescription):
-    """Describes Inventory Manager sensor entity."""
-
-
-SENSOR_TYPES: tuple[InventoryManagerSensorEntityDescription, ...] = (
-    InventoryManagerSensorEntityDescription(
+SENSOR_TYPES: tuple[SensorEntityDescription, ...] = (
+    SensorEntityDescription(
         key="supply_empty",
         translation_key=STRING_SENSOR_ENTITY,
         device_class=SensorDeviceClass.TIMESTAMP,
@@ -71,14 +65,14 @@ async def async_setup_entry(
 class EmptyPredictionSensor(InventoryManagerEntity, SensorEntity):
     """Represents a sensor to predict when we run out of supplies."""
 
-    entity_description: InventoryManagerSensorEntityDescription
+    entity_description: SensorEntityDescription
 
     _attr_should_poll = False
 
     def __init__(
         self,
         item: InventoryManagerItem,
-        description: InventoryManagerSensorEntityDescription,
+        description: SensorEntityDescription,
     ) -> None:
         """Construct a new EmptyPredictionSensor."""
         super().__init__(item)
