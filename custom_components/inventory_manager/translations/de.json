@@ -14,10 +14,10 @@
         },
         "data_description": {
           "item_name": "Nicht mehr änderbar.",
-          "item_size": "Optional. Größe oder Gewicht von einer zu verwaltenden Einheit.",
-          "item_unit": "Optional. Die Einheit in der Größe oder Gewicht gemessen wird.",
-          "item_agent": "Optional. Nicht mehr änderbar.",
-          "item_vendor": "Optional. Nicht mehr änderbar.",
+          "item_size": "Größe oder Gewicht von einer zu verwaltenden Einheit.",
+          "item_unit": "Die Einheit in der Größe oder Gewicht gemessen wird.",
+          "item_agent": "Der Wirkstoff in Medikamenten.",
+          "item_vendor": "Der Hersteller.",
           "item_max_consumption": "Die maximale Anzahl an Einheiten, die zu einem Zeitpunkt konsumiert werden kann. ",
           "warning_days_before_empty": "Ein binärer Sensor warnt so viele Tage vor dem Leerstand."
         },
@@ -39,9 +39,12 @@
           "warning_days_before_empty": "Wie viele Tage vor leerem Bestand warnen?"
         },
         "data_description": {
+          "item_agent": "Der Wirkstoff in Medikamenten.",
           "item_size": "Geben Sie etwas ein, das messbar ist",
           "item_unit": "Die Einheit, in der die Größe gemessen wird. Sollte eine Abkürzung sein, kann aber eine beliebige Zeichenfolge sein. Beispiele: g, l, Stk.",
-          "item_max_consumption": "Dient als Maximalwert für die Verbrauchseinstellungen."
+          "item_max_consumption": "Dient als Maximalwert für die Verbrauchseinstellungen.",
+          "item_vendor": "Der Hersteller.",
+          "warning_days_before_empty": "Ein binärer Sensor warnt so viele Tage vor dem Leerstand."
         },
         "description": "Beschreiben Sie die Versorgungseinheit, die Sie verfolgen wollen. Am besten ist es, in Einheiten zu denken, die sich leicht zählen und messen lassen. Das können Dosen, Stücke oder Pakete sein.",
         "title": "{name}"

@@ -35,15 +35,16 @@ def _build_entry_title(data: dict[str, Any]) -> str:
     return title
 
 
-PILL_SCHEMA = vol.Schema(
+# TODO: Put optional fields into a collapsed section.
+INVENTORY_MANAGER_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_ITEM_NAME): cv.string,
+        vol.Required(CONF_ITEM_MAX_CONSUMPTION, default=5.0): cv.positive_float,
+        vol.Required(CONF_SENSOR_BEFORE_EMPTY, default=10): cv.positive_int,
         vol.Optional(CONF_ITEM_SIZE): cv.positive_int,
         vol.Optional(CONF_ITEM_UNIT): cv.string,
         vol.Optional(CONF_ITEM_AGENT): cv.string,
         vol.Optional(CONF_ITEM_VENDOR): cv.string,
-        vol.Required(CONF_ITEM_MAX_CONSUMPTION, default=5.0): cv.positive_float,
-        vol.Required(CONF_SENSOR_BEFORE_EMPTY, default=10): cv.positive_int,
     }
 )
 # TODO: Add option to select platforms to enable/disable.
@@ -80,7 +81,7 @@ class InventoryConfigFlow(ConfigFlow, domain=DOMAIN):
             )
 
         return self.async_show_form(
-            step_id="user", data_schema=PILL_SCHEMA, errors=errors
+            step_id="user", data_schema=INVENTORY_MANAGER_SCHEMA, errors=errors
         )
 
 
