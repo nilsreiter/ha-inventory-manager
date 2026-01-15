@@ -91,6 +91,7 @@ class InventoryConfigFlow(ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] = {}
         if user_input is not None:
             # Merge optional fields with required fields
+            assert self.data is not None  # Always set by async_step_user
             self.data.update(user_input)
             # Create the entry with all data
             return self.async_create_entry(
