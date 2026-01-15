@@ -88,10 +88,9 @@ class InventoryConfigFlow(ConfigFlow, domain=DOMAIN):
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Handle optional fields step."""
+        errors: dict[str, str] = {}
         if user_input is not None:
             # Merge optional fields with required fields
-            if self.data is None:
-                self.data = {}
             self.data.update(user_input)
             # Create the entry with all data
             return self.async_create_entry(
@@ -100,7 +99,7 @@ class InventoryConfigFlow(ConfigFlow, domain=DOMAIN):
             )
 
         return self.async_show_form(
-            step_id="optional", data_schema=OPTIONAL_SCHEMA
+            step_id="optional", data_schema=OPTIONAL_SCHEMA, errors=errors
         )
 
 
