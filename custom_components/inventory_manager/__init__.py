@@ -10,11 +10,8 @@ from homeassistant.const import Platform
 from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 
 from .const import (
-    CONF_ITEM_NAME,
-    CONF_ITEM_SIZE,
     CONF_ITEM_VENDOR,
     DOMAIN,
-    SPACE,
 )
 from .coordinator import InventoryManagerItem
 from .data import (
