@@ -11,7 +11,8 @@
           "item_agent": "Wirkstoff",
           "item_vendor": "Hersteller",
           "warning_days_before_empty": "Wie viele Tage vor leerem Bestand warnen?",
-          "enabled_platforms": "Aktivierte Plattformen"
+          "enable_week_entity": "Wöchentliche Verbrauchsentität aktivieren",
+          "enable_month_entity": "Monatliche Verbrauchsentität aktivieren"
         },
         "data_description": {
           "item_name": "Nicht mehr änderbar.",
@@ -21,7 +22,8 @@
           "item_vendor": "Der Hersteller.",
           "item_max_consumption": "Die maximale Anzahl an Einheiten, die zu einem Zeitpunkt konsumiert werden kann. ",
           "warning_days_before_empty": "Ein binärer Sensor warnt so viele Tage vor dem Leerstand.",
-          "enabled_platforms": "Wählen Sie aus, welche Plattformen aktiviert werden sollen. Zahlenentitäten verfolgen Vorrat und Verbrauch. Sensorentitäten sagen voraus, wann der Vorrat leer sein wird. Binäre Sensorentitäten warnen bei niedrigem Vorrat."
+          "enable_week_entity": "Eine Entität zum Verfolgen des wöchentlichen Verbrauchs erstellen. Standardmäßig deaktiviert.",
+          "enable_month_entity": "Eine Entität zum Verfolgen des monatlichen Verbrauchs erstellen. Standardmäßig deaktiviert."
         },
         "description": "Beschreiben Sie die Versorgungseinheit, die Sie verfolgen wollen. Am besten ist es, in Einheiten zu denken, die sich leicht zählen und messen lassen. Das können Dosen, Stücke oder Pakete sein.",
         "title": "Vorrat verfolgen"
@@ -39,7 +41,8 @@
           "item_agent": "Wirkstoff",
           "item_vendor": "Hersteller",
           "warning_days_before_empty": "Wie viele Tage vor leerem Bestand warnen?",
-          "enabled_platforms": "Aktivierte Plattformen"
+          "enable_week_entity": "Wöchentliche Verbrauchsentität aktivieren",
+          "enable_month_entity": "Monatliche Verbrauchsentität aktivieren"
         },
         "data_description": {
           "item_agent": "Der Wirkstoff in Medikamenten.",
@@ -48,7 +51,8 @@
           "item_max_consumption": "Dient als Maximalwert für die Verbrauchseinstellungen.",
           "item_vendor": "Der Hersteller.",
           "warning_days_before_empty": "Ein binärer Sensor warnt so viele Tage vor dem Leerstand.",
-          "enabled_platforms": "Wählen Sie aus, welche Plattformen aktiviert werden sollen. Zahlenentitäten verfolgen Vorrat und Verbrauch. Sensorentitäten sagen voraus, wann der Vorrat leer sein wird. Binäre Sensorentitäten warnen bei niedrigem Vorrat."
+          "enable_week_entity": "Eine Entität zum Verfolgen des wöchentlichen Verbrauchs erstellen. Standardmäßig deaktiviert.",
+          "enable_month_entity": "Eine Entität zum Verfolgen des monatlichen Verbrauchs erstellen. Standardmäßig deaktiviert."
         },
         "description": "Beschreiben Sie die Versorgungseinheit, die Sie verfolgen wollen. Am besten ist es, in Einheiten zu denken, die sich leicht zählen und messen lassen. Das können Dosen, Stücke oder Pakete sein.",
         "title": "{name}"
@@ -90,13 +94,6 @@
         "night": "Nachts",
         "week": "Wöchentlich",
         "month": "Monatlich"
-      }
-    },
-    "enabled_platforms": {
-      "options": {
-        "number": "Zahlenentitäten (Vorratsverfolgung)",
-        "sensor": "Sensorentitäten (Vorhersage für leeren Vorrat)",
-        "binary_sensor": "Binäre Sensorentitäten (Warnung bei niedrigem Vorrat)"
       }
     }
   },

@@ -14,6 +14,8 @@ from homeassistant.const import EntityCategory
 from homeassistant.helpers import entity_platform
 
 from .const import (
+    CONF_ENABLE_MONTH_ENTITY,
+    CONF_ENABLE_WEEK_ENTITY,
     CONF_ITEM_MAX_CONSUMPTION,
     CONF_ITEM_UNIT,
     DOMAIN,
@@ -122,10 +124,20 @@ async def async_setup_entry(
     # Get the item object
     coordinator: InventoryManagerItem = hass.data[DOMAIN][config_entry.entry_id]
 
-    # Create numeric entities
-    entities = [
-        InventoryNumber(coordinator, description) for description in NUMBER_TYPES
-    ]
+    # Get configuration for which entities to enable
+    enable_week = config_entry.data.get(CONF_ENABLE_WEEK_ENTITY, False)
+    enable_month = config_entry.data.get(CONF_ENABLE_MONTH_ENTITY, False)
+
+    # Create numeric entities, filtering based on configuration
+    entities = []
+    for description in NUMBER_TYPES:
+        # Skip week entity if not enabled
+        if description.key == "week" and not enable_week:
+            continue
+        # Skip month entity if not enabled
+        if description.key == "month" and not enable_month:
+            continue
+        entities.append(InventoryNumber(coordinator, description))
 
     async_add_entities(entities, update_before_add=False)
 
