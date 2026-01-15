@@ -25,10 +25,12 @@ from .const import (
     SERVICE_PREDEFINED_AMOUNT,
     SERVICE_STORE,
     STRING_EVENING_ENTITY,
+    STRING_MONTH_ENTITY,
     STRING_MORNING_ENTITY,
     STRING_NIGHT_ENTITY,
     STRING_NOON_ENTITY,
     STRING_SUPPLY_ENTITY,
+    STRING_WEEK_ENTITY,
     UNIQUE_ID,
     UNIT_PCS,
 )
@@ -49,8 +51,6 @@ class InventoryManagerNumberEntityDescription(NumberEntityDescription):
     """Describes Inventory Manager number entity."""
 
     entity_type: InventoryManagerEntityType | None = None
-    icon_override: str | None = None
-    entity_category_override: EntityCategory | None = None
 
 
 # TODO: Add option to change number parameters (min, max, step) from config flow.
@@ -60,39 +60,55 @@ NUMBER_TYPES: tuple[InventoryManagerNumberEntityDescription, ...] = (
         translation_key=STRING_SUPPLY_ENTITY,
         has_entity_name=True,
         entity_type=InventoryManagerEntityType.SUPPLY,
-        icon_override="mdi:medication",
+        icon="mdi:medication",
     ),
     InventoryManagerNumberEntityDescription(
         key="morning",
         translation_key=STRING_MORNING_ENTITY,
         has_entity_name=True,
         entity_type=InventoryManagerEntityType.MORNING,
-        icon_override="mdi:pill-multiple",
-        entity_category_override=EntityCategory.CONFIG,
+        icon="mdi:pill-multiple",
+        entity_category=EntityCategory.CONFIG,
     ),
     InventoryManagerNumberEntityDescription(
         key="noon",
         translation_key=STRING_NOON_ENTITY,
         has_entity_name=True,
         entity_type=InventoryManagerEntityType.NOON,
-        icon_override="mdi:pill-multiple",
-        entity_category_override=EntityCategory.CONFIG,
+        icon="mdi:pill-multiple",
+        entity_category=EntityCategory.CONFIG,
     ),
     InventoryManagerNumberEntityDescription(
         key="evening",
         translation_key=STRING_EVENING_ENTITY,
         has_entity_name=True,
         entity_type=InventoryManagerEntityType.EVENING,
-        icon_override="mdi:pill-multiple",
-        entity_category_override=EntityCategory.CONFIG,
+        icon="mdi:pill-multiple",
+        entity_category=EntityCategory.CONFIG,
     ),
     InventoryManagerNumberEntityDescription(
         key="night",
         translation_key=STRING_NIGHT_ENTITY,
         has_entity_name=True,
         entity_type=InventoryManagerEntityType.NIGHT,
-        icon_override="mdi:pill-multiple",
-        entity_category_override=EntityCategory.CONFIG,
+        icon="mdi:pill-multiple",
+        entity_category=EntityCategory.CONFIG,
+    ),
+    InventoryManagerNumberEntityDescription(
+        key="week",
+        translation_key=STRING_WEEK_ENTITY,
+        has_entity_name=True,
+        entity_type=InventoryManagerEntityType.WEEK,
+        icon="mdi:pill-multiple",
+        entity_category=EntityCategory.CONFIG,
+    ),
+    InventoryManagerNumberEntityDescription(
+        key="month",
+        translation_key=STRING_MONTH_ENTITY,
+        has_entity_name=True,
+        entity_type=InventoryManagerEntityType.MONTH,
+        icon="mdi:pill-multiple",
+        entity_category=EntityCategory.CONFIG,
     ),
 )
 
@@ -186,12 +202,6 @@ class InventoryNumber(InventoryManagerEntity, RestoreNumber):
             self.native_max_value = float(
                 item.config_entry.data.get(CONF_ITEM_MAX_CONSUMPTION, 5)
             )
-
-        # Set icon and entity_category from description
-        if description.icon_override:
-            self.icon = description.icon_override
-        if description.entity_category_override:
-            self.entity_category = description.entity_category_override
 
     @property
     def native_value(self) -> float:
