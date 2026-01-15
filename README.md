@@ -20,7 +20,7 @@ Track medication for family members or pets. Set up automations to consume doses
 
 ![Bona the dog](img/bona.jpeg)
 
-For example, tracking medicine for [our dog Bona](img/bona.jpeg) who requires multiple medications. The integration automatically tracks consumption and alerts when it's time to reorder.
+For example, tracking medicine for our dog Bona (pictured above) who requires multiple medications. The integration automatically tracks consumption and alerts when it's time to reorder.
 
 ![Dashboard Screenshot](img/screenshot1.png)
 
