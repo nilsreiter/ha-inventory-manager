@@ -99,6 +99,7 @@ NUMBER_TYPES: tuple[InventoryManagerNumberEntityDescription, ...] = (
         has_entity_name=True,
         entity_type=InventoryManagerEntityType.WEEK,
         icon="mdi:pill-multiple",
+        entity_registry_enabled_default=False,
         entity_category=EntityCategory.CONFIG,
     ),
     InventoryManagerNumberEntityDescription(
@@ -107,6 +108,7 @@ NUMBER_TYPES: tuple[InventoryManagerNumberEntityDescription, ...] = (
         has_entity_name=True,
         entity_type=InventoryManagerEntityType.MONTH,
         icon="mdi:pill-multiple",
+        entity_registry_enabled_default=False,
         entity_category=EntityCategory.CONFIG,
     ),
 )
@@ -264,11 +266,3 @@ class InventoryNumber(InventoryManagerEntity, RestoreNumber):
     def store(self, call: core.ServiceCall) -> None:
         """Execute the service call to store additional supplies."""
         self.coordinator.take_number(-1 * call.data[SERVICE_AMOUNT])
-
-    @property
-    def entity_registry_enabled_default(self) -> bool:
-        """Return if the entity should be enabled when first added to the entity registry."""
-        return self.entity_type not in (
-            InventoryManagerEntityType.WEEK,
-            InventoryManagerEntityType.MONTH,
-        )
