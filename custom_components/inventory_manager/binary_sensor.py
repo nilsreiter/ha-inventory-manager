@@ -56,7 +56,6 @@ async def async_setup_entry(
     )
 
 
-# TODO: Add tests for this entity.
 class WarnSensor(InventoryManagerEntity, BinarySensorEntity):
     """Represents a warning entity."""
 
