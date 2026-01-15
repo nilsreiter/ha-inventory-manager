@@ -35,20 +35,15 @@ def _build_entry_title(data: dict[str, Any]) -> str:
     return title
 
 
-REQUIRED_SCHEMA = vol.Schema(
+PILL_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_ITEM_NAME): cv.string,
-        vol.Required(CONF_ITEM_MAX_CONSUMPTION, default=5.0): cv.positive_float,
-        vol.Required(CONF_SENSOR_BEFORE_EMPTY, default=10): cv.positive_int,
-    }
-)
-
-OPTIONAL_SCHEMA = vol.Schema(
-    {
         vol.Optional(CONF_ITEM_SIZE): cv.positive_int,
         vol.Optional(CONF_ITEM_UNIT): cv.string,
         vol.Optional(CONF_ITEM_AGENT): cv.string,
         vol.Optional(CONF_ITEM_VENDOR): cv.string,
+        vol.Required(CONF_ITEM_MAX_CONSUMPTION, default=5.0): cv.positive_float,
+        vol.Required(CONF_SENSOR_BEFORE_EMPTY, default=10): cv.positive_int,
     }
 )
 # TODO: Add option to select platforms to enable/disable.
@@ -73,34 +68,19 @@ class InventoryConfigFlow(ConfigFlow, domain=DOMAIN):
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
-        """Handle user step to configure the integration (required fields)."""
+        """Handle user step to configure the integration."""
         errors: dict[str, str] = {}
         if user_input is not None:
-            # Store required fields and proceed to optional fields
+            # Input is valid, set data.
             self.data = user_input
-            return await self.async_step_optional()
-
-        return self.async_show_form(
-            step_id="user", data_schema=REQUIRED_SCHEMA, errors=errors
-        )
-
-    async def async_step_optional(
-        self, user_input: dict[str, Any] | None = None
-    ) -> ConfigFlowResult:
-        """Handle optional fields step."""
-        errors: dict[str, str] = {}
-        if user_input is not None:
-            # Merge optional fields with required fields
-            assert self.data is not None  # Always set by async_step_user
-            self.data.update(user_input)
-            # Create the entry with all data
+            # Return the form of the next step.
             return self.async_create_entry(
                 title=_build_entry_title(self.data),
                 data=self.data,
             )
 
         return self.async_show_form(
-            step_id="optional", data_schema=OPTIONAL_SCHEMA, errors=errors
+            step_id="user", data_schema=PILL_SCHEMA, errors=errors
         )
 
 

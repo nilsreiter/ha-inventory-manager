@@ -9,32 +9,24 @@
       "user": {
         "data": {
           "item_name": "Object name",
+          "item_size": "Weight or size",
+          "item_unit": "Unit (e.g., g)",
+          "item_agent": "Agent name",
           "item_max_consumption": "Maximal consumption",
+          "item_vendor": "Vendor",
           "warning_days_before_empty": "Advanced warning in days"
         },
         "data_description": {
           "item_name": "Cannot be changed later on.",
+          "item_size": "Optional. The weight/size of a unit you want to track. Tracking will be done in these units.",
+          "item_unit": "Optional. The unit used to measure the weight/size of the unit.",
+          "item_agent": "Optional. Cannot be changed later on.",
+          "item_vendor": "Optional. Cannot be changed later on.",
           "item_max_consumption": "The maximum amount of items that can be consumed in one go.",
           "warning_days_before_empty": "A binary sensor will be created that is active that many days before supply is empty."
         },
         "description": "Describe the supply unit you want to track. It's best to think in units that can easily be counted and measured. These can be cans, pieces or packages.",
         "title": "Track Supply"
-      },
-      "optional": {
-        "data": {
-          "item_size": "Weight or size",
-          "item_unit": "Unit (e.g., g)",
-          "item_agent": "Agent name",
-          "item_vendor": "Vendor"
-        },
-        "data_description": {
-          "item_size": "Optional. The weight/size of a unit you want to track. Tracking will be done in these units.",
-          "item_unit": "Optional. The unit used to measure the weight/size of the unit.",
-          "item_agent": "Optional. Cannot be changed later on.",
-          "item_vendor": "Optional. Cannot be changed later on."
-        },
-        "description": "Optional fields to provide additional information about the supply unit.",
-        "title": "Optional Settings"
       }
     }
   },

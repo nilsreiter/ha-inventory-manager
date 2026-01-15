@@ -5,32 +5,24 @@
       "user": {
         "data": {
           "item_name": "Name des Objekts",
+          "item_size": "Menge oder Größe",
+          "item_unit": "Einheit (z.B. g)",
           "item_max_consumption": "Maximaler Verbrauch",
+          "item_agent": "Wirkstoff",
+          "item_vendor": "Hersteller",
           "warning_days_before_empty": "Wie viele Tage vor leerem Bestand warnen?"
         },
         "data_description": {
           "item_name": "Nicht mehr änderbar.",
+          "item_size": "Optional. Größe oder Gewicht von einer zu verwaltenden Einheit.",
+          "item_unit": "Optional. Die Einheit in der Größe oder Gewicht gemessen wird.",
+          "item_agent": "Optional. Nicht mehr änderbar.",
+          "item_vendor": "Optional. Nicht mehr änderbar.",
           "item_max_consumption": "Die maximale Anzahl an Einheiten, die zu einem Zeitpunkt konsumiert werden kann. ",
           "warning_days_before_empty": "Ein binärer Sensor warnt so viele Tage vor dem Leerstand."
         },
         "description": "Beschreiben Sie die Versorgungseinheit, die Sie verfolgen wollen. Am besten ist es, in Einheiten zu denken, die sich leicht zählen und messen lassen. Das können Dosen, Stücke oder Pakete sein.",
         "title": "Vorrat verfolgen"
-      },
-      "optional": {
-        "data": {
-          "item_size": "Menge oder Größe",
-          "item_unit": "Einheit (z.B. g)",
-          "item_agent": "Wirkstoff",
-          "item_vendor": "Hersteller"
-        },
-        "data_description": {
-          "item_size": "Optional. Größe oder Gewicht von einer zu verwaltenden Einheit.",
-          "item_unit": "Optional. Die Einheit in der Größe oder Gewicht gemessen wird.",
-          "item_agent": "Optional. Nicht mehr änderbar.",
-          "item_vendor": "Optional. Nicht mehr änderbar."
-        },
-        "description": "Optionale Felder zur Bereitstellung zusätzlicher Informationen über die Versorgungseinheit.",
-        "title": "Optionale Einstellungen"
       }
     }
   },
