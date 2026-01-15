@@ -31,6 +31,13 @@ _LOGGER = logging.getLogger(__name__)
 # Default platforms to enable
 DEFAULT_PLATFORMS = [Platform.NUMBER, Platform.SENSOR, Platform.BINARY_SENSOR]
 
+# Platform selector options
+PLATFORM_SELECTOR_OPTIONS = {
+    Platform.NUMBER.value: Platform.NUMBER,
+    Platform.SENSOR.value: Platform.SENSOR,
+    Platform.BINARY_SENSOR.value: Platform.BINARY_SENSOR,
+}
+
 
 def _build_entry_title(data: dict[str, Any]) -> str:
     """Build entry title from configuration data."""
@@ -52,13 +59,7 @@ INVENTORY_MANAGER_SCHEMA = vol.Schema(
         vol.Optional(CONF_ITEM_VENDOR): cv.string,
         vol.Optional(
             CONF_ENABLED_PLATFORMS, default=DEFAULT_PLATFORMS
-        ): cv.multi_select(
-            {
-                Platform.NUMBER: Platform.NUMBER,
-                Platform.SENSOR: Platform.SENSOR,
-                Platform.BINARY_SENSOR: Platform.BINARY_SENSOR,
-            }
-        ),
+        ): cv.multi_select(PLATFORM_SELECTOR_OPTIONS),
     }
 )
 
@@ -152,13 +153,7 @@ class InventoryOptionsFlowHandler(OptionsFlow):
                 vol.Optional(
                     CONF_ENABLED_PLATFORMS,
                     default=current_data.get(CONF_ENABLED_PLATFORMS, DEFAULT_PLATFORMS),
-                ): cv.multi_select(
-                    {
-                        Platform.NUMBER: Platform.NUMBER,
-                        Platform.SENSOR: Platform.SENSOR,
-                        Platform.BINARY_SENSOR: Platform.BINARY_SENSOR,
-                    }
-                ),
+                ): cv.multi_select(PLATFORM_SELECTOR_OPTIONS),
             }
         )
         # TODO: Check if translations are complete for options flow.
