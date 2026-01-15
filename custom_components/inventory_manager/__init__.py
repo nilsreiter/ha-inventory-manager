@@ -42,16 +42,12 @@ async def async_setup_entry(
         entry, hass, logger=_LOGGER, name=DOMAIN, update_interval=timedelta(hours=1)
     )
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
-    friendly_name = entry.data[CONF_ITEM_NAME]
-    if CONF_ITEM_SIZE in entry.data:
-        friendly_name = friendly_name + SPACE + str(entry.data[CONF_ITEM_SIZE])
-
     entry.runtime_data = InventoryManagerData(
         device_info=DeviceInfo(
             identifiers={(DOMAIN, entry.entry_id)},
             manufacturer=entry.data.get(CONF_ITEM_VENDOR),
             entry_type=DeviceEntryType.SERVICE,
-            name=friendly_name,
+            name=entry.title,
         ),
         coordinator=coordinator,
     )

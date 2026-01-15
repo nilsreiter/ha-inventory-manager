@@ -35,7 +35,6 @@ def _build_entry_title(data: dict[str, Any]) -> str:
     return title
 
 
-# TODO: Put optional fields into a collapsed section.
 INVENTORY_MANAGER_SCHEMA = vol.Schema(
     {
         vol.Required(CONF_ITEM_NAME): cv.string,
@@ -47,7 +46,6 @@ INVENTORY_MANAGER_SCHEMA = vol.Schema(
         vol.Optional(CONF_ITEM_VENDOR): cv.string,
     }
 )
-# TODO: Add option to select platforms to enable/disable.
 
 
 class InventoryConfigFlow(ConfigFlow, domain=DOMAIN):
