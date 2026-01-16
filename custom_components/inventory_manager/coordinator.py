@@ -6,7 +6,7 @@ from typing import Any
 
 from homeassistant.helpers.entity import generate_entity_id
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
-from homeassistant.util.slugify import slugify
+from slugify import slugify
 
 from .const import (
     ENTITY_ID,
