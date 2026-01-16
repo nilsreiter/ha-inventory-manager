@@ -2,7 +2,6 @@
 
 DOMAIN = "inventory_manager"
 
-UNDERSCORE = "_"
 SPACE = " "
 
 CONF_ITEM_NAME = "item_name"
