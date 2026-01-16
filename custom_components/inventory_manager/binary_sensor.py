@@ -94,11 +94,11 @@ class WarnSensor(InventoryManagerEntity, BinarySensorEntity):
 
         days_remaining = self.coordinator.days_remaining()
         if days_remaining == STATE_UNAVAILABLE:
-            self.is_on = False
+            self._attr_is_on = False
             self._attr_available = False
         else:
             self._attr_available = True
-            self.is_on = days_remaining < self.coordinator.config_entry.data.get(
+            self._attr_is_on = days_remaining < self.coordinator.config_entry.data.get(
                 CONF_SENSOR_BEFORE_EMPTY, 0
             )
         self.schedule_update_ha_state()
