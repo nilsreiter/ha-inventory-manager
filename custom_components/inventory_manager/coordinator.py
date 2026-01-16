@@ -6,11 +6,12 @@ from typing import Any
 
 from homeassistant.helpers.entity import generate_entity_id
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
+from slugify import slugify
 
 from .const import (
     ENTITY_ID,
     ENTITY_TYPE,
-    UNDERSCORE,
+    SPACE,
     UNIQUE_ID,
 )
 from .data import InventoryManagerConfigEntry
@@ -57,7 +58,7 @@ class InventoryManagerItem(DataUpdateCoordinator):
 
         # We try to generate a sensible unique id
         if self.config_entry.entry_id is not None and entity_type.name is not None:
-            unique_id = self.config_entry.entry_id + UNDERSCORE + entity_type.name
+            unique_id = slugify(self.config_entry.title + SPACE + entity_type.name)
         else:
             unique_id = str(uuid.uuid4())
         return {

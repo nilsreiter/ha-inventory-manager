@@ -1,34 +1,144 @@
-# Track Supply of Specific Things in Home Assistant
+# Inventory Manager for Home Assistant
 
-This integration is for tracking specific items in your household.
+[![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
 
-- The component is added once for each item (e.g., dishwasher tabs)
-- Each item is represented as a service/device and offers multiple entities
-- Supply: How many pieces of the item we have left (entity type `number`)
-- Morning/Noon/Evening/Night/Week/Month: How many pieces are regularly consumed (settable in steps of 0.05)?
-- Empty: When do we predict the supply to be empty? (sensor of device class `timestamp`). Note that for this purpose, monthly consumption is calculated as per 28 days.
-- Soon empty: Do we have to act? (binary sensor of device class `problem`)
-- The integration adds two services that can be called regularly (e.g., in the morning) or when specific things happen.
-  - The service "consume" reduces the number of items left by the specified amount (this should be run as an automation).
-  - The service "store" increases the number of items left. This can be called after groceries have been bought.
+A Home Assistant integration for tracking and managing household inventory items with predictive restocking alerts. Perfect for tracking medicines, household supplies, pet supplies, and any consumable items.
+
+## Features
+
+- 📦 **Track Multiple Items**: Create a separate integration instance for each item you want to track
+- 📊 **Flexible Consumption Tracking**: Set different consumption rates for different times (morning, noon, evening, night, weekly, monthly)
+- 🔮 **Predictive Analytics**: Automatically calculates when you'll run out based on consumption patterns
+- ⚠️ **Smart Alerts**: Get advance warnings before supplies run out (configurable threshold)
+- 🔄 **Easy Updates**: Simple services to consume items or add new supplies
+- 🏠 **Native Integration**: Fully integrated with Home Assistant's automation system
 
 ## Use Cases
 
-I have devloped this integration with two use cases in mind:
+### Medicine Tracking
+Track medication for family members or pets. Set up automations to consume doses at scheduled times and get predictions on when refills are needed.
 
-- Track medicine for our dog. Unfortunately, [our dog Bona](img/bona.jpeg) is pretty sick, which means we have to regularly feed her several pills. The integration service is called every morning and evening, and we get a prediction on when it is time to get new supplies. ![](img/screenshot1.png)
+![Bona the dog](img/bona.jpeg)
 
-- Track dishwasher tabs. Every time the dishwasher starts (tracked via power consumption), our supply of dishwasher tabs is reduced by one. To predict when we run out, we assume that we run it 0.5 times every day.
+For example, tracking medicine for our dog Bona (pictured above) who requires multiple medications. The integration automatically tracks consumption and alerts when it's time to reorder.
+
+![Dashboard Screenshot](img/screenshot1.png)
+
+### Household Supplies
+Track consumables like dishwasher tablets, laundry detergent, or coffee pods. Trigger consumption based on appliance usage (e.g., via power monitoring) and never run out unexpectedly.
 
 ## Installation
 
-This integration is easiest to install via [HACS](https://hacs.xyz). At this moment, you'll have to add `https://github.com/nilsreiter/ha-inventory-manager` as a custom repository though. To do this, follow [this guide](https://hacs.xyz/docs/faq/custom_repositories).
+### HACS (Recommended)
 
-## Description
+1. Open HACS in your Home Assistant instance
+2. Click on "Integrations"
+3. Click the three dots menu in the top right
+4. Select "Custom repositories"
+5. Add this repository URL: `https://github.com/nilsreiter/ha-inventory-manager`
+6. Select "Integration" as the category
+7. Click "Add"
+8. Search for "Inventory Manager" in HACS
+9. Click "Download"
+10. Restart Home Assistant
 
-The integration provides several entities to track the state and supply levels of things. For each thing, the component stores the number of things we have, together with the prescribed use in the morning, at noon, in the evening and at night. Based on this information, the component predicts when we run out -- this is the state of the main sensor. A second "problem sensor" can signal the need to buy new things before we run out (by default, the sensor signals a problem 10 days before we run out).
+For detailed HACS custom repository instructions, see the [HACS documentation](https://hacs.xyz/docs/faq/custom_repositories).
 
-To make this really useful, the component adds a service call `inventory_manager.consume`, which can be called to signal that a certain amount of things has been consumed. This updates the supply levels of each consumed thing type.
+### Manual Installation
+
+1. Download the latest release from GitHub
+2. Copy the `custom_components/inventory_manager` directory to your Home Assistant's `custom_components` directory
+3. Restart Home Assistant
+
+## Configuration
+
+### Adding an Item
+
+1. Go to **Settings** → **Devices & Services**
+2. Click **Add Integration**
+3. Search for **Inventory Manager**
+4. Fill in the configuration form:
+
+| Field | Required | Description | Default |
+|-------|----------|-------------|---------|
+| **Item Name** | Yes | Name of the item (e.g., "Vetmedin 5mg", "Dishwasher Tabs") | - |
+| **Item Size** | No | Size or quantity per package (e.g., 30, 100) | - |
+| **Item Unit** | No | Unit of measurement (e.g., "pcs", "tablets", "tabs") | "pcs." |
+| **Item Vendor** | No | Manufacturer or vendor name | - |
+| **Item Agent** | No | Additional identifier (e.g., active ingredient) | - |
+| **Max Consumption** | Yes | Maximum allowed consumption per time slot | 5.0 |
+| **Warning Days Before Empty** | Yes | Days before empty to trigger warning | 10 |
+
+5. Click **Submit** to create the item
+
+### Modifying Configuration
+
+To modify an item's configuration:
+
+1. Go to **Settings** → **Devices & Services**
+2. Find the Inventory Manager integration instance
+3. Click **Configure**
+4. Update the desired fields
+5. Click **Submit**
+
+## Entities
+
+Each configured item creates multiple entities:
+
+### Number Entities
+
+#### Supply (Required)
+- **Entity ID**: `number.<item_name>_supply`
+- **Purpose**: Current inventory count
+- **Type**: Number input
+- **Unit**: Configurable (default: "pcs.")
+- **Range**: 0 to 1,000,000
+- **Step**: 0.25
+
+#### Consumption Time Slots (Configuration)
+These entities define how much is consumed at different times:
+
+- **Morning** (`number.<item_name>_morning`) - Daily morning consumption
+- **Noon** (`number.<item_name>_noon`) - Daily noon consumption
+- **Evening** (`number.<item_name>_evening`) - Daily evening consumption
+- **Night** (`number.<item_name>_night`) - Daily night consumption
+- **Week** (`number.<item_name>_week`) - Weekly consumption (disabled by default)
+- **Month** (`number.<item_name>_month`) - Monthly consumption (disabled by default)
+
+**Note**: Week and Month entities are disabled by default. Enable them in the entity settings if needed.
+
+All consumption entities:
+- **Type**: Number input (Configuration)
+- **Range**: 0 to configured max consumption
+- **Step**: 0.25
+- **Category**: Configuration
+
+### Sensor Entities
+
+#### Empty Prediction
+- **Entity ID**: `sensor.<item_name>_supply_empty`
+- **Purpose**: Predicts when supply will run out
+- **Device Class**: Timestamp
+- **Attributes**:
+  - `days_remaining`: Calculated days until empty
+
+**Calculation**: Based on current supply and daily consumption rate. Monthly consumption is calculated as per 28 days for prediction purposes.
+
+#### Warning/Problem Indicator
+- **Entity ID**: `binary_sensor.<item_name>_warning`
+- **Purpose**: Alerts when supply is running low
+- **Device Class**: Problem
+- **State**: 
+  - `On`: Days remaining < configured warning threshold
+  - `Off`: Sufficient supply available
+
+## Services
+
+### `inventory_manager.consume`
+
+Reduces the supply count. Use this service in automations when items are consumed.
+
+#### Method 1: Specify Exact Amount
 
 ```yaml
 service: inventory_manager.consume
@@ -38,7 +148,29 @@ target:
   entity_id: number.dishwasher_tab_supply
 ```
 
-It is also possible to consume multiple things at once, and for each thing we consume the predefined amount of things (i.e. if 0.5 pills of one type and 1.5 pills of another type has to be taken):
+**Parameters**:
+- `amount` (required): Number of items consumed (positive integer)
+- `target.entity_id` (required): The supply entity to consume from
+
+**Example Use Case**: Consume one dishwasher tablet each time the dishwasher starts.
+
+#### Method 2: Use Predefined Time Slot
+
+```yaml
+service: inventory_manager.consume
+data:
+  predefined-amount: evening
+target:
+  entity_id: number.vetmedin_5mg_supply
+```
+
+**Parameters**:
+- `predefined-amount` (required): Time slot to consume (`morning`, `noon`, `evening`, `night`, `week`, `month`)
+- `target.entity_id` (required): The supply entity to consume from
+
+**Example Use Case**: Automatically consume the evening dose of medication at a scheduled time.
+
+#### Method 3: Consume Multiple Items
 
 ```yaml
 service: inventory_manager.consume
@@ -48,33 +180,140 @@ target:
   entity_id:
     - number.vetmedin_5mg_supply
     - number.vetoryl_30mg_supply
+    - number.vitamin_d_supply
 ```
 
-## Back story
+**Example Use Case**: Consume multiple medications that are taken together at the same time.
 
-![](img/bona.jpeg)
+### `inventory_manager.store`
 
-This is Bona, our 12 year old dog. Bona is an awesome dog, but unfortunately not very healthy. Thus, we feed her an increasing set of tablets every morning and every evening. Shortly after having started with Home Assistant, I started playing around with ways to track the inventory of Bonas tablets -- in order to timely get new tablets when the old packages get empty.
-
-This essentially can be done with template entities, but it's cumbersome.
+Increases the supply count when new items are added to inventory.
 
 ```yaml
-- unique_id: pills_vetoryl_10mg_daily
-  state: >-
-    {{ states('input_number.bona_pill_vetoryl10_pro_tag_morgens')|float + states('input_number.bona_pill_vetoryl10_pro_tag_mittags')|float + states('input_number.bona_pill_vetoryl10_pro_tag_abends')|float }}
-- unique_id: pills_vetoryl_10mg_vorrat
-  device_class: timestamp
-  state: >-
-    {% from 'bona_pills.jinja' import predict_pills_state %}
-    {{ predict_pills_state("input_number.bona_pill_vetoryl10", "sensor.template_pills_vetoryl_10mg_daily") }}
-  attributes:
-    remaining_days: >-
-      {% from 'bona_pills.jinja' import predict_pills_remaining_days %}
-      {{ predict_pills_remaining_days("input_number.bona_pill_vetoryl10", "sensor.template_pills_vetoryl_10mg_daily") }}
+service: inventory_manager.store
+data:
+  amount: 30
+target:
+  entity_id: number.vetmedin_5mg_supply
 ```
 
-This is an excerpt of my `templates.yaml` file, making use of [custom templates, introduced in 2023.4](https://www.home-assistant.io/blog/2023/04/05/release-20234/). The first entity `pills_vetoryl_10mg_daily` calculates the total daily consumption of a specific tablet type, while the second `pills_vetoryl_10mg_vorrat` predicts when this pill type will be gone.
+**Parameters**:
+- `amount` (required): Number of items added (positive integer)
+- `target.entity_id` (required): The supply entity to add to
 
-In addition to these two template entities (for no less than six different tablet types), this requires `input_number` entities for morning, evening and noon, because -- of course -- the dog gets a different combination of tablets every time (and this also changes from time to time).
+**Example Use Cases**:
+- Add new supplies after shopping
+- Trigger from NFC tag when new package is opened
+- Button press when restocking
 
-Because this is very repetitive and makes all my files unreadable, I created this custom component (also, to find out if I could, and because it was fun).
+## Automation Examples
+
+### Example 1: Consume Medication at Scheduled Time
+
+```yaml
+automation:
+  - alias: "Give Dog Evening Medication"
+    trigger:
+      - platform: time
+        at: "18:00:00"
+    action:
+      - service: inventory_manager.consume
+        data:
+          predefined-amount: evening
+        target:
+          entity_id:
+            - number.vetmedin_5mg_supply
+            - number.vetoryl_30mg_supply
+```
+
+### Example 2: Consume Based on Appliance Usage
+
+```yaml
+automation:
+  - alias: "Track Dishwasher Tab Usage"
+    trigger:
+      - platform: state
+        entity_id: sensor.dishwasher_status
+        to: "running"
+    action:
+      - service: inventory_manager.consume
+        data:
+          amount: 1
+        target:
+          entity_id: number.dishwasher_tab_supply
+```
+
+### Example 3: Low Supply Alert
+
+```yaml
+automation:
+  - alias: "Alert When Medication Running Low"
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.vetmedin_5mg_warning
+        to: "on"
+    action:
+      - service: notify.mobile_app
+        data:
+          title: "Medication Alert"
+          message: "Vetmedin 5mg is running low! Time to reorder."
+```
+
+### Example 4: Add Supplies via NFC Tag
+
+```yaml
+automation:
+  - alias: "Restock Medication via NFC"
+    trigger:
+      - platform: tag
+        tag_id: "medication_restock"
+    action:
+      - service: inventory_manager.store
+        data:
+          amount: 30
+        target:
+          entity_id: number.vetmedin_5mg_supply
+      - service: notify.mobile_app
+        data:
+          message: "Added 30 tablets to Vetmedin inventory"
+```
+
+## Troubleshooting
+
+### Entities Not Appearing
+
+- Ensure you've restarted Home Assistant after installation
+- Check that the integration was configured successfully in Settings → Devices & Services
+- Week and Month entities are disabled by default - enable them in entity settings if needed
+
+### Incorrect Predictions
+
+- Verify that consumption time slots are configured correctly
+- Ensure the supply number is accurate
+- Remember: Monthly consumption is calculated as consumption per 28 days
+- Daily consumption is calculated as: `morning + noon + evening + night + (week/7) + (month/28)`
+
+### Service Not Working
+
+- Verify the entity ID in your service call matches the actual entity
+- Ensure you're using the correct service parameter (`amount` or `predefined-amount`, not both)
+- Check Home Assistant logs for error messages: Settings → System → Logs
+
+## Contributing
+
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+Based on the [integration_blueprint template](https://github.com/ludeeus/integration_blueprint).
+
+## Support
+
+- 🐛 **Bug Reports**: [Open an issue](https://github.com/nilsreiter/ha-inventory-manager/issues)
+- 💡 **Feature Requests**: [Open an issue](https://github.com/nilsreiter/ha-inventory-manager/issues)
+- 📖 **Documentation**: [GitHub Wiki](https://github.com/nilsreiter/ha-inventory-manager)
+

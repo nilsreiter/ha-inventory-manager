@@ -53,7 +53,6 @@ class InventoryManagerNumberEntityDescription(NumberEntityDescription):
     entity_type: InventoryManagerEntityType | None = None
 
 
-# TODO: Add option to change number parameters (min, max, step) from config flow.
 NUMBER_TYPES: tuple[InventoryManagerNumberEntityDescription, ...] = (
     InventoryManagerNumberEntityDescription(
         key="supply",
@@ -100,6 +99,7 @@ NUMBER_TYPES: tuple[InventoryManagerNumberEntityDescription, ...] = (
         has_entity_name=True,
         entity_type=InventoryManagerEntityType.WEEK,
         icon="mdi:pill-multiple",
+        entity_registry_enabled_default=False,
         entity_category=EntityCategory.CONFIG,
     ),
     InventoryManagerNumberEntityDescription(
@@ -108,6 +108,7 @@ NUMBER_TYPES: tuple[InventoryManagerNumberEntityDescription, ...] = (
         has_entity_name=True,
         entity_type=InventoryManagerEntityType.MONTH,
         icon="mdi:pill-multiple",
+        entity_registry_enabled_default=False,
         entity_category=EntityCategory.CONFIG,
     ),
 )

@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 from homeassistant.components.binary_sensor import (
     BinarySensorDeviceClass,
     BinarySensorEntity,
+    BinarySensorEntityDescription,
 )
 from homeassistant.const import STATE_UNAVAILABLE
 from homeassistant.helpers import entity_platform
@@ -30,6 +31,15 @@ if TYPE_CHECKING:
 
 _LOGGER = logging.getLogger(__name__)
 
+SENSOR_TYPES: tuple[BinarySensorEntityDescription, ...] = (
+    BinarySensorEntityDescription(
+        key="warning",
+        translation_key=STRING_PROBLEM_ENTITY,
+        device_class=BinarySensorDeviceClass.PROBLEM,
+        has_entity_name=True,
+    ),
+)
+
 
 async def async_setup_entry(
     _hass: core.HomeAssistant,
@@ -37,39 +47,46 @@ async def async_setup_entry(
     async_add_entities: entity_platform.AddEntitiesCallback,
 ) -> None:
     """Set up sensors from a config entry created in the integrations UI."""
-    # TODO: Switch to the use of entity descriptions
     async_add_entities(
-        [WarnSensor(config_entry.runtime_data.coordinator)], update_before_add=True
+        [
+            WarnSensor(config_entry.runtime_data.coordinator, description)
+            for description in SENSOR_TYPES
+        ],
+        update_before_add=True,
     )
 
 
-# TODO: Add tests for this entity.
-# TODO: Verify that attributes are correctly set and updated.
-# TODO: Add initial refresh after setup to get correct state.
 class WarnSensor(InventoryManagerEntity, BinarySensorEntity):
     """Represents a warning entity."""
 
     _attr_has_entity_name = True
 
-    def __init__(self, item: InventoryManagerItem) -> None:
+    def __init__(
+        self, item: InventoryManagerItem, description: BinarySensorEntityDescription
+    ) -> None:
         """Create a new object."""
         super().__init__(item)
+        self.entity_description = description
+
         _LOGGER.debug("Initializing WarnSensor")
         self.coordinator.entity[InventoryManagerEntityType.WARNING] = self
         self.platform = entity_platform.async_get_current_platform()
 
         self._attr_should_poll = False
-        self._attr_device_class = BinarySensorDeviceClass.PROBLEM
         self._attr_unique_id = self.coordinator.entity_config[
             InventoryManagerEntityType.WARNING
         ][UNIQUE_ID]
 
-        self.translation_key = STRING_PROBLEM_ENTITY
         self._attr_available = False
-        self.is_on = False
+        self._attr_is_on = False
         self.entity_id = item.entity_config[InventoryManagerEntityType.WARNING][
             ENTITY_ID
         ]
+
+    async def async_added_to_hass(self) -> None:
+        """Call update to get initial state after entity is added."""
+        await super().async_added_to_hass()
+        self.update()
 
     def update(self) -> None:
         """Update the state of the entity."""
@@ -77,11 +94,11 @@ class WarnSensor(InventoryManagerEntity, BinarySensorEntity):
 
         days_remaining = self.coordinator.days_remaining()
         if days_remaining == STATE_UNAVAILABLE:
-            self.is_on = False
+            self._attr_is_on = False
             self._attr_available = False
         else:
             self._attr_available = True
-            self.is_on = days_remaining < self.coordinator.config_entry.data.get(
+            self._attr_is_on = days_remaining < self.coordinator.config_entry.data.get(
                 CONF_SENSOR_BEFORE_EMPTY, 0
             )
         self.schedule_update_ha_state()
