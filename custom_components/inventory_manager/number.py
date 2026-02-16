@@ -250,8 +250,9 @@ class InventoryNumber(InventoryManagerEntity, RestoreNumber):
         """Execute the consume service call."""
         if SERVICE_PREDEFINED_AMOUNT in call.data:
             _LOGGER.debug(
-                "Calling service 'consume' with predefined amount %s",
+                "Calling service 'consume' with predefined amount %s, which is %i",
                 call.data[SERVICE_PREDEFINED_AMOUNT],
+                self.coordinator.get(call.data[SERVICE_PREDEFINED_AMOUNT]),
             )
             self.coordinator.take_dose(
                 InventoryManagerEntityType[call.data[SERVICE_PREDEFINED_AMOUNT].upper()]
