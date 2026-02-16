@@ -100,11 +100,14 @@ class InventoryManagerItem(DataUpdateCoordinator):
         for et in [
             InventoryManagerEntityType.EMPTYPREDICTION,
             InventoryManagerEntityType.WARNING,
+            InventoryManagerEntityType.SUPPLY,
         ]:
             if et in self.entity and self.entity[et] is not None:
-                self.entity[et].update()
+                self.entity[et].schedule_update_ha_state()
             else:
-                _LOGGER.debug("%s cannot be updated yet", et)
+                _LOGGER.debug(
+                    "%s cannot be updated yet", InventoryManagerEntityType(et).name
+                )
 
     def get(self, entity_type: InventoryManagerEntityType) -> float:
         """Get number."""
