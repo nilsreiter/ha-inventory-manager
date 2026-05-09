@@ -103,7 +103,7 @@ class InventoryManagerItem(DataUpdateCoordinator):
             InventoryManagerEntityType.SUPPLY,
         ]:
             if et in self.entity and self.entity[et] is not None:
-                self.entity[et].schedule_update_ha_state()
+                self.entity[et].update()
             else:
                 _LOGGER.debug(
                     "%s cannot be updated yet", InventoryManagerEntityType(et).name
