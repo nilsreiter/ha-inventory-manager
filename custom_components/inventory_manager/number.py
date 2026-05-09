@@ -267,3 +267,8 @@ class InventoryNumber(InventoryManagerEntity, RestoreNumber):
     def store(self, call: core.ServiceCall) -> None:
         """Execute the service call to store additional supplies."""
         self.coordinator.take_number(-1 * call.data[SERVICE_AMOUNT])
+
+    def update(self) -> None:
+        """Update the state."""
+        self._available = True
+        self.schedule_update_ha_state()
