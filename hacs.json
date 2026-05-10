@@ -2,8 +2,5 @@
     "name": "Inventory Manager",
     "hide_default_branch": false,
     "homeassistant": "2024.1.0",
-    "render_readme": true,
-    "codeowners": [
-        "nilsreiter"
-    ]
+    "render_readme": true
 }
