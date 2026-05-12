@@ -4,4 +4,4 @@ pip>=21.0
 ruff==0.15.10
 numpy>=1.26.0
 mutagen
-python-slugify>=7.0.0
+python-slugify>=8.0.4
