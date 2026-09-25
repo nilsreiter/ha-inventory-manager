@@ -28,7 +28,12 @@ if TYPE_CHECKING:
 _LOGGER = logging.getLogger(__name__)
 
 
-PLATFORMS: list[str] = [Platform.NUMBER, Platform.SENSOR, Platform.BINARY_SENSOR]
+PLATFORMS: list[str] = [
+    Platform.NUMBER,
+    Platform.SENSOR,
+    Platform.BINARY_SENSOR,
+    Platform.BUTTON,
+]
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 

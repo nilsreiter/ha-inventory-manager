@@ -102,6 +102,9 @@
       "supply_entity": {
         "name": "Supply"
       },
+      "package_quantity_entity": {
+        "name": "Package Quantity"
+      },
       "morning_entity": {
         "name": "Morning"
       },
