@@ -26,7 +26,12 @@ if TYPE_CHECKING:
 _LOGGER = logging.getLogger(__name__)
 
 
-PLATFORMS: list[str] = [Platform.NUMBER, Platform.SENSOR, Platform.BINARY_SENSOR]
+PLATFORMS: list[str] = [
+    Platform.NUMBER,
+    Platform.SENSOR,
+    Platform.BINARY_SENSOR,
+    Platform.BUTTON,
+]
 
 
 async def async_setup_entry(

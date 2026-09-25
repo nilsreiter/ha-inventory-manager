@@ -54,7 +54,7 @@
   "services": {
     "consume": {
       "name": "Verbrauchen",
-      "description": "Dieser Dienst kann aufgerufen werden, um eine bestimmte oder vordefinierte Stückzahl aus einem Angebot zu verbrauchen. Er gehört zur Integration des Inventory Manager. Wichtig! Es kann nur eines der Felder „Menge“ und „Vordefinierte Menge“ angegeben werden.",
+      "description": "Dieser Dienst kann aufgerufen werden, um eine bestimmte oder vordefinierte Stückzahl aus einem Angebot zu verbrauchen. Er gehört zur Integration des Inventory Manager. Wichtig! Es kann nur eines der Felder „Menge" und „Vordefinierte Menge" angegeben werden.",
       "fields": {
         "predefined-amount": {
           "name": "Vordefinierte Menge",
@@ -75,6 +75,10 @@
           "description": "Wie viele Einheiten werden eingelagert?"
         }
       }
+    },
+    "fill": {
+      "name": "Auffüllen",
+      "description": "Fügt eine Paketmenge zum Vorrat hinzu, basierend auf dem Paketmenge-Wert des Geräts. Keine Parameter erforderlich."
     }
   },
   "selector": {
@@ -98,6 +102,9 @@
             "pcs.": "Stk."
           }
         }
+      },
+      "package_quantity_entity": {
+        "name": "Paketmenge"
       },
       "morning_entity": {
         "name": "Morgens"
