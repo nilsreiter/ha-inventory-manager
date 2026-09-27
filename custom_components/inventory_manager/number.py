@@ -24,12 +24,14 @@ from .const import (
     SERVICE_CONSUME,
     SERVICE_PREDEFINED_AMOUNT,
     SERVICE_STORE,
+    SERVICE_FILL,
     STRING_EVENING_ENTITY,
     STRING_MONTH_ENTITY,
     STRING_MORNING_ENTITY,
     STRING_NIGHT_ENTITY,
     STRING_NOON_ENTITY,
     STRING_SUPPLY_ENTITY,
+    STRING_PACKAGE_QUANTITY_ENTITY,
     STRING_WEEK_ENTITY,
     UNIQUE_ID,
     UNIT_PCS,
@@ -60,6 +62,14 @@ NUMBER_TYPES: tuple[InventoryManagerNumberEntityDescription, ...] = (
         has_entity_name=True,
         entity_type=InventoryManagerEntityType.SUPPLY,
         icon="mdi:medication",
+    ),
+    InventoryManagerNumberEntityDescription(
+        key="package_quantity",
+        translation_key=STRING_PACKAGE_QUANTITY_ENTITY,
+        has_entity_name=True,
+        entity_type=InventoryManagerEntityType.PACKAGE_QUANTITY,
+        icon="mdi:package-variant",
+        entity_category=EntityCategory.CONFIG,
     ),
     InventoryManagerNumberEntityDescription(
         key="morning",
@@ -158,6 +168,12 @@ async def async_setup_entry(
             lambda target, payload: target.store(payload),
         )
 
+        platform.async_register_entity_service(
+            SERVICE_FILL,
+            {},  # no parameters — reads size from the device itself
+            lambda target, payload: target.fill(payload),
+        )
+
 
 class InventoryNumber(InventoryManagerEntity, RestoreNumber):
     """Represents a numeric entity."""
@@ -199,6 +215,8 @@ class InventoryNumber(InventoryManagerEntity, RestoreNumber):
         # Set max value based on entity type
         if self.entity_type == InventoryManagerEntityType.SUPPLY:
             self.native_max_value = 1000000
+        elif self.entity_type == InventoryManagerEntityType.PACKAGE_QUANTITY:
+            self.native_max_value = 10000
         else:
             self.native_max_value = float(
                 item.config_entry.data.get(CONF_ITEM_MAX_CONSUMPTION, 5)
@@ -267,6 +285,20 @@ class InventoryNumber(InventoryManagerEntity, RestoreNumber):
     def store(self, call: core.ServiceCall) -> None:
         """Execute the service call to store additional supplies."""
         self.coordinator.take_number(-1 * call.data[SERVICE_AMOUNT])
+
+    def fill(self, call: core.ServiceCall) -> None:
+        # Execute the fill service — add one package worth of supply."""
+        size_entity = self.coordinator.entity.get(
+            InventoryManagerEntityType.PACKAGE_QUANTITY
+        )
+        if size_entity is not None:
+            amount = size_entity.native_value
+            if amount > 0:
+                self.coordinator.take_number(-1 * amount)
+            else:
+                _LOGGER.warning("Fill called but size is 0 — set the size entity first")
+        else:
+            _LOGGER.warning("Fill called but no size entity found")
 
     def update(self) -> None:
         """Update the state."""

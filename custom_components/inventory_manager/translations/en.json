@@ -68,6 +68,20 @@
           "description": "Which pre-defined amount do we consume?"
         }
       }
+    },
+    "store": {
+      "name": "Store",
+      "description": "Adds a specified number of pieces to a supply.",
+      "fields": {
+        "amount": {
+          "name": "Amount",
+          "description": "How many pieces should be added?"
+        }
+      }
+    },
+    "fill": {
+      "name": "Fill",
+      "description": "Adds one package worth of supply using the Package Quantity value on the device. No parameters needed."
     }
   },
   "selector": {
@@ -86,6 +100,9 @@
     "number": {
       "supply_entity": {
         "name": "Supply"
+      },
+      "package_quantity_entity": {
+        "name": "Package Quantity"
       },
       "morning_entity": {
         "name": "Morning"

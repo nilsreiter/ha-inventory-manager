@@ -19,11 +19,13 @@ ATTR_DAYS_REMAINING = "days_remaining"
 
 SERVICE_CONSUME = "consume"
 SERVICE_STORE = "store"
+SERVICE_FILL = "fill"
 
 STRING_PROBLEM_ENTITY = "problem_entity"
 STRING_SENSOR_ENTITY = "sensor_entity"
 
 STRING_SUPPLY_ENTITY = "supply_entity"
+STRING_PACKAGE_QUANTITY_ENTITY = "package_quantity_entity"
 STRING_MORNING_ENTITY = "morning_entity"
 STRING_NOON_ENTITY = "noon_entity"
 STRING_EVENING_ENTITY = "evening_entity"

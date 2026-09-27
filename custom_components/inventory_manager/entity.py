@@ -16,6 +16,7 @@ class InventoryManagerEntityType(IntFlag):
     """Supported features of the number entities."""
 
     SUPPLY = 1
+    PACKAGE_QUANTITY = 2
     NIGHT = 4
     MORNING = 8
     NOON = 32
