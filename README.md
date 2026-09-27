@@ -95,6 +95,15 @@ Each configured item creates multiple entities:
 - **Range**: 0 to 1,000,000
 - **Step**: 0.25
 
+#### Package Quantity
+- **Entity ID**: `number.<item_name>_package_quantity`
+- **Purpose**: Defines how many units come in one package/bottle
+- **Type**: Number input
+- **Unit**: Configurable (default: "pcs.")
+- **Range**: 0 to 10,000
+- **Step**: 0.25
+- **Category**: Configuration
+
 #### Consumption Time Slots (Configuration)
 These entities define how much is consumed at different times:
 
@@ -113,6 +122,13 @@ All consumption entities:
 - **Step**: 0.25
 - **Category**: Configuration
 
+### Button Entities
+
+#### Fill
+- **Entity ID**: `button.<item_name>_fill`
+- **Purpose**: Adds one package worth of supply in a single press
+- **Requires**: Package Quantity to be set to a non-zero value
+
 ### Sensor Entities
 
 #### Empty Prediction
@@ -128,7 +144,7 @@ All consumption entities:
 - **Entity ID**: `binary_sensor.<item_name>_warning`
 - **Purpose**: Alerts when supply is running low
 - **Device Class**: Problem
-- **State**: 
+- **State**:
   - `On`: Days remaining < configured warning threshold
   - `Off`: Sufficient supply available
 
@@ -193,6 +209,25 @@ Increases the supply count when new items are added to inventory.
 service: inventory_manager.store
 data:
   amount: 30
+target:
+  entity_id: number.vetmedin_5mg_supply
+```
+
+**Parameters**:
+- `amount` (required): Number of items added (positive integer)
+- `target.entity_id` (required): The supply entity to add to
+
+**Example Use Cases**:
+- Add new supplies after shopping
+- Trigger from NFC tag when new package is opened
+- Button press when restocking
+
+### `inventory_manager.fill`
+
+Increases the supply count by the package_quantity.
+
+```yaml
+service: inventory_manager.fill
 target:
   entity_id: number.vetmedin_5mg_supply
 ```
@@ -276,6 +311,25 @@ automation:
       - service: notify.mobile_app
         data:
           message: "Added 30 tablets to Vetmedin inventory"
+```
+
+### Example 5: Fill Supplies via NFC tag
+
+```yaml
+automation:
+  - alias: "Restock Medication via NFC"
+    trigger:
+      - platform: tag
+        tag_id: "medication_restock"
+    action:
+      - service: inventory_manager.fill
+        target:
+          entity_id: number.vetmedin_5mg_supply
+      - service: notify.mobile_app
+        data:
+          message: >
+            Added {{ states('number.vetmedin_5mg_package_quantity') | int }}
+            tablets to Vetmedin inventory
 ```
 
 ## Troubleshooting
