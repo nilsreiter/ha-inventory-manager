@@ -1,8 +1,11 @@
 store:
-  target:
-    device:
-      integration: inventory_manager
   fields:
+    device_id:
+      selector:
+        device:
+          multiple: true
+          filter:
+            - integration: inventory_manager
     amount:
       required: true
       example: 42
@@ -12,10 +15,13 @@ store:
           step: any
           mode: box
 consume:
-  target:
-    device:
-      integration: inventory_manager
   fields:
+    device_id:
+      selector:
+        device:
+          multiple: true
+          filter:
+            - integration: inventory_manager
     amount:
       example: 42
       selector:

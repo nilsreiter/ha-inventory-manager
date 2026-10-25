@@ -56,6 +56,10 @@
       "name": "Consume",
       "description": "This service can be called to consume a specified or predefined number of pieces from a supply. It belongs to the Inventory Manager integration. Important: Only one of the fields `amount` and `predefined-amount` can be specified.",
       "fields": {
+        "device_id": {
+          "name": "Item",
+          "description": "The items to change."
+        },
         "amount": {
           "name": "Amount",
           "description": "How many pieces should we consume?"
@@ -70,6 +74,10 @@
       "name": "Store",
       "description": "This service can be called to increase the supply of an item.",
       "fields": {
+        "device_id": {
+          "name": "Item",
+          "description": "The items to change."
+        },
         "amount": {
           "name": "Amount",
           "description": "How many pieces are added to the supply?"

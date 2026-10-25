@@ -138,7 +138,7 @@ All consumption entities:
 
 ## Actions
 
-Both actions target items. In the UI, you pick the item's device (e.g. "Vetmedin 5mg"). In YAML, you can use the device (`device_id`) or any of the item's entities (`entity_id`), usually its supply entity, as in the examples below. Areas and labels work too. Each item is only changed once, even if several of its entities are targeted.
+Both actions target items. In the UI, you pick one or more items in the **Item** field (e.g. "Vetmedin 5mg"). In YAML, you can use the item's device (`device_id`) or any of the item's entities (`entity_id`), usually its supply entity, as in the examples below. Areas and labels work in YAML too. Each item is only changed once, even if several of its entities are targeted.
 
 ### `inventory_manager.consume`
 
