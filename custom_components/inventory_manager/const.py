@@ -36,6 +36,7 @@ STRING_MONTH_ENTITY = "month_entity"
 SERVICE_AMOUNT = "amount"
 SERVICE_PREDEFINED_AMOUNT = "predefined-amount"
 SERVICE_AMOUNT_SPECIFICATION = "amount-specification"
+PREDEFINED_AMOUNTS = ["morning", "noon", "evening", "night", "week", "month"]
 
 NATIVE_VALUE = "native_value"
 UNIQUE_ID = "unique_id"

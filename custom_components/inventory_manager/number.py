@@ -19,6 +19,7 @@ from .const import (
     DOMAIN,
     ENTITY_ID,
     NATIVE_VALUE,
+    PREDEFINED_AMOUNTS,
     SERVICE_AMOUNT,
     SERVICE_AMOUNT_SPECIFICATION,
     SERVICE_CONSUME,
@@ -143,7 +144,7 @@ async def async_setup_entry(
                 ): cv.positive_int,
                 vol.Exclusive(
                     SERVICE_PREDEFINED_AMOUNT, SERVICE_AMOUNT_SPECIFICATION
-                ): cv.string,
+                ): vol.In(PREDEFINED_AMOUNTS),
             },
             lambda target, payload: target.take(payload),
         )
@@ -249,14 +250,15 @@ class InventoryNumber(InventoryManagerEntity, RestoreNumber):
     def take(self, call: core.ServiceCall) -> None:
         """Execute the consume service call."""
         if SERVICE_PREDEFINED_AMOUNT in call.data:
+            dose = InventoryManagerEntityType[
+                call.data[SERVICE_PREDEFINED_AMOUNT].upper()
+            ]
             _LOGGER.debug(
-                "Calling service 'consume' with predefined amount %s, which is %i",
+                "Calling service 'consume' with predefined amount %s, which is %f",
                 call.data[SERVICE_PREDEFINED_AMOUNT],
-                self.coordinator.get(call.data[SERVICE_PREDEFINED_AMOUNT]),
+                self.coordinator.get(dose),
             )
-            self.coordinator.take_dose(
-                InventoryManagerEntityType[call.data[SERVICE_PREDEFINED_AMOUNT].upper()]
-            )
+            self.coordinator.take_dose(dose)
         elif SERVICE_AMOUNT in call.data:
             _LOGGER.debug(
                 "Calling service 'consume' with amount %f",
