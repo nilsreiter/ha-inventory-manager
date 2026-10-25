@@ -32,6 +32,8 @@ def _build_entry_title(data: dict[str, Any]) -> str:
     title = data.get(CONF_ITEM_NAME, "")
     if data.get(CONF_ITEM_SIZE):
         title += " " + str(data[CONF_ITEM_SIZE])
+        if data.get(CONF_ITEM_UNIT):
+            title += str(data[CONF_ITEM_UNIT])
     return title
 
 
