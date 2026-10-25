@@ -34,6 +34,7 @@
     "step": {
       "init": {
         "data": {
+          "item_name": "Object name",
           "item_agent": "Agent name",
           "item_size": "Weight or size",
           "item_unit": "Unit (e.g., g)",
