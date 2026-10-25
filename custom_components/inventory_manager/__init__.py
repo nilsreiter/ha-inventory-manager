@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import logging
-from datetime import timedelta
 from typing import TYPE_CHECKING
 
 from homeassistant.const import Platform
@@ -34,8 +33,9 @@ async def async_setup_entry(
     hass: core.HomeAssistant, entry: InventoryManagerConfigEntry
 ) -> bool:
     """Set up platform from a ConfigEntry."""
+    # All changes are pushed to the entities, so there is nothing to poll
     coordinator = InventoryManagerItem(
-        entry, hass, logger=_LOGGER, name=DOMAIN, update_interval=timedelta(hours=1)
+        entry, hass, logger=_LOGGER, name=DOMAIN, update_interval=None
     )
     entry.runtime_data = InventoryManagerData(
         device_info=DeviceInfo(
