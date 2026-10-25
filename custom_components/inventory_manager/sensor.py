@@ -59,7 +59,7 @@ async def async_setup_entry(
         )
         for description in SENSOR_TYPES
     ]
-    async_add_entities(sensors, update_before_add=True)
+    async_add_entities(sensors)
 
 
 class EmptyPredictionSensor(InventoryManagerEntity, SensorEntity):
@@ -68,6 +68,7 @@ class EmptyPredictionSensor(InventoryManagerEntity, SensorEntity):
     entity_description: SensorEntityDescription
 
     _attr_should_poll = False
+    entity_type = InventoryManagerEntityType.EMPTYPREDICTION
 
     def __init__(
         self,
@@ -81,8 +82,6 @@ class EmptyPredictionSensor(InventoryManagerEntity, SensorEntity):
 
         self.platform = entity_platform.async_get_current_platform()
 
-        self.coordinator.entity[InventoryManagerEntityType.EMPTYPREDICTION] = self
-
         entity_config: dict = item.entity_config[
             InventoryManagerEntityType.EMPTYPREDICTION
         ]
@@ -93,12 +92,7 @@ class EmptyPredictionSensor(InventoryManagerEntity, SensorEntity):
         self.entity_id = entity_config[ENTITY_ID]
         self._attr_native_value: datetime = now() + timedelta(days=10000)
 
-    async def async_added_to_hass(self) -> None:
-        """Call update to get initial state after entity is added."""
-        await super().async_added_to_hass()
-        self.update()
-
-    def update(self) -> None:
+    def _update_from_item(self) -> None:
         """Recalculate the remaining time until supply is empty."""
         _LOGGER.debug("Updating sensor")
 
@@ -112,4 +106,3 @@ class EmptyPredictionSensor(InventoryManagerEntity, SensorEntity):
             "Setting native value of %s to %s", self.entity_id, self._attr_native_value
         )
         self._available = True
-        self.schedule_update_ha_state()

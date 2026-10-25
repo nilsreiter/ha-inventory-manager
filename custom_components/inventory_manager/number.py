@@ -154,7 +154,7 @@ async def async_setup_entry(
                 ),
                 cv.has_at_least_one_key(SERVICE_AMOUNT, SERVICE_PREDEFINED_AMOUNT),
             ),
-            lambda target, payload: target.take(payload),
+            InventoryNumber.take,
         )
 
         platform.async_register_entity_service(
@@ -162,7 +162,7 @@ async def async_setup_entry(
             {
                 vol.Required(SERVICE_AMOUNT): AMOUNT_SCHEMA,
             },
-            lambda target, payload: target.store(payload),
+            InventoryNumber.store,
         )
 
 
@@ -189,9 +189,6 @@ class InventoryNumber(InventoryManagerEntity, RestoreNumber):
 
         self.entity_type: InventoryManagerEntityType = description.entity_type
 
-        # register self with the item object
-        self.coordinator.entity[self.entity_type] = self
-
         entity_config: dict = item.entity_config[self.entity_type]
         self.entity_id: str = entity_config[ENTITY_ID]
         self.unique_id: str = entity_config[UNIQUE_ID]
@@ -216,30 +213,23 @@ class InventoryNumber(InventoryManagerEntity, RestoreNumber):
         """The native value."""
         return self.coordinator.get(self.entity_type)
 
-    @native_value.setter
-    def native_value(self, value: float) -> None:
+    async def async_set_native_value(self, value: float) -> None:
+        """Set the native value."""
         _LOGGER.debug("Setting native value of %s to %2.1f.", self.entity_id, value)
         self.coordinator.set(self.entity_type, value)
-        self.schedule_update_ha_state()
-
-    def set_native_value(self, value: float) -> None:
-        """Set the native value."""
-        self.native_value = value
-        self.schedule_update_ha_state()
 
     async def async_added_to_hass(self) -> None:
         """Restore the number from last time."""
-        try:
-            last_data = await self.async_get_last_number_data()
-            if last_data is not None:
-                last_number_data = last_data.as_dict()
-                if isinstance(last_number_data[NATIVE_VALUE], (int, float)):
-                    self.native_value = float(last_number_data[NATIVE_VALUE])
-                else:
-                    self.native_value = 0.0
-        except AttributeError:
-            self.set_native_value(0.0)
-            self.schedule_update_ha_state()
+        # Restore before registering with the item, so the restored value is
+        # part of the first state that is written
+        last_data = await self.async_get_last_number_data()
+        if last_data is not None:
+            last_number_data = last_data.as_dict()
+            if isinstance(last_number_data[NATIVE_VALUE], (int, float)):
+                self.coordinator.set(
+                    self.entity_type, float(last_number_data[NATIVE_VALUE])
+                )
+        await super().async_added_to_hass()
 
     @property
     def supported_features(self) -> int:
@@ -253,6 +243,7 @@ class InventoryNumber(InventoryManagerEntity, RestoreNumber):
             return 4  # LightEntityFeature.EFFECT
         return 0
 
+    @core.callback
     def take(self, call: core.ServiceCall) -> None:
         """Execute the consume service call."""
         if SERVICE_PREDEFINED_AMOUNT in call.data:
@@ -272,11 +263,7 @@ class InventoryNumber(InventoryManagerEntity, RestoreNumber):
             )
             self.coordinator.take_number(call.data[SERVICE_AMOUNT])
 
+    @core.callback
     def store(self, call: core.ServiceCall) -> None:
         """Execute the service call to store additional supplies."""
         self.coordinator.take_number(-1 * call.data[SERVICE_AMOUNT])
-
-    def update(self) -> None:
-        """Update the state."""
-        self._available = True
-        self.schedule_update_ha_state()

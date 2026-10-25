@@ -90,19 +90,19 @@ class InventoryManagerItem(DataUpdateCoordinator):
             )
 
     def set(self, spec: InventoryManagerEntityType, val: float) -> None:
-        """Set one number."""
+        """Set one number. Must be called from the event loop."""
         if val < 0:
             self._numbers[spec] = 0.0
         else:
             self._numbers[spec] = float(val)
 
         for et in [
+            spec,
             InventoryManagerEntityType.EMPTYPREDICTION,
             InventoryManagerEntityType.WARNING,
-            InventoryManagerEntityType.SUPPLY,
         ]:
-            if et in self.entity and self.entity[et] is not None:
-                self.entity[et].update()
+            if (entity := self.entity.get(et)) is not None:
+                entity.async_item_updated()
             else:
                 _LOGGER.debug(
                     "%s cannot be updated yet", InventoryManagerEntityType(et).name
