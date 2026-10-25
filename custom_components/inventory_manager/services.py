@@ -11,6 +11,10 @@ from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import HomeAssistant, ServiceCall, callback
 from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers.target import (
+    TargetSelection,
+    async_extract_referenced_entity_ids,
+)
 
 from .const import (
     DOMAIN,
@@ -22,26 +26,6 @@ from .const import (
     SERVICE_STORE,
 )
 from .entity import InventoryManagerEntityType
-
-try:
-    from homeassistant.helpers.target import (
-        TargetSelection,
-        async_extract_referenced_entity_ids,
-    )
-
-    def _extract_entity_ids(hass: HomeAssistant, call: ServiceCall) -> set[str]:
-        selected = async_extract_referenced_entity_ids(hass, TargetSelection(call.data))
-        return selected.referenced | selected.indirectly_referenced
-
-except ImportError:  # Older Home Assistant versions
-    from homeassistant.helpers.service import (
-        async_extract_referenced_entity_ids as _async_extract_from_call,
-    )
-
-    def _extract_entity_ids(hass: HomeAssistant, call: ServiceCall) -> set[str]:
-        selected = _async_extract_from_call(hass, call)
-        return selected.referenced | selected.indirectly_referenced
-
 
 if TYPE_CHECKING:
     from .coordinator import InventoryManagerItem
@@ -124,10 +108,11 @@ def _targeted_items(
     every entity of an item leads to that item, so each item is only
     returned once.
     """
+    selected = async_extract_referenced_entity_ids(hass, TargetSelection(call.data))
     registry = er.async_get(hass)
 
     entry_ids: set[str] = set()
-    for entity_id in _extract_entity_ids(hass, call):
+    for entity_id in selected.referenced | selected.indirectly_referenced:
         entity = registry.async_get(entity_id)
         if entity is not None and entity.platform == DOMAIN and entity.config_entry_id:
             entry_ids.add(entity.config_entry_id)
