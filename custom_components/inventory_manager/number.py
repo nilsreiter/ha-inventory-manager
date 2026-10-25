@@ -6,25 +6,14 @@ import logging
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-import homeassistant.helpers.config_validation as cv
-import voluptuous as vol
-from homeassistant import config_entries, core
 from homeassistant.components.number import NumberEntityDescription, RestoreNumber
 from homeassistant.const import EntityCategory
-from homeassistant.helpers import entity_platform
 
 from .const import (
     CONF_ITEM_MAX_CONSUMPTION,
     CONF_ITEM_UNIT,
-    DOMAIN,
     ENTITY_ID,
     NATIVE_VALUE,
-    PREDEFINED_AMOUNTS,
-    SERVICE_AMOUNT,
-    SERVICE_AMOUNT_SPECIFICATION,
-    SERVICE_CONSUME,
-    SERVICE_PREDEFINED_AMOUNT,
-    SERVICE_STORE,
     STRING_EVENING_ENTITY,
     STRING_MONTH_ENTITY,
     STRING_MORNING_ENTITY,
@@ -40,14 +29,12 @@ from .entity import InventoryManagerEntity, InventoryManagerEntityType
 if TYPE_CHECKING:
     from types import NoneType
 
+    from homeassistant import config_entries, core
     from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
     from .coordinator import InventoryManagerItem
 
 _LOGGER = logging.getLogger(__name__)
-
-# Amounts may be fractional (e.g. half a tablet), but must be positive
-AMOUNT_SCHEMA = vol.All(vol.Coerce(float), vol.Range(min=0, min_included=False))
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -119,11 +106,11 @@ NUMBER_TYPES: tuple[InventoryManagerNumberEntityDescription, ...] = (
 
 
 async def async_setup_entry(
-    hass: core.HomeAssistant,
+    _hass: core.HomeAssistant,
     config_entry: config_entries.ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> NoneType:
-    """Set up number entities and register service."""
+    """Set up number entities."""
     # Get the item object
     coordinator: InventoryManagerItem = config_entry.runtime_data.coordinator
 
@@ -133,37 +120,6 @@ async def async_setup_entry(
     ]
 
     async_add_entities(entities, update_before_add=False)
-
-    # Register service, if needed
-    if not hass.services.has_service(DOMAIN, SERVICE_CONSUME):
-        _LOGGER.debug("Registering service %s.%s", DOMAIN, SERVICE_CONSUME)
-        platform = entity_platform.async_get_current_platform()
-
-        platform.async_register_entity_service(
-            SERVICE_CONSUME,
-            vol.All(
-                cv.make_entity_service_schema(
-                    {
-                        vol.Exclusive(
-                            SERVICE_AMOUNT, SERVICE_AMOUNT_SPECIFICATION
-                        ): AMOUNT_SCHEMA,
-                        vol.Exclusive(
-                            SERVICE_PREDEFINED_AMOUNT, SERVICE_AMOUNT_SPECIFICATION
-                        ): vol.In(PREDEFINED_AMOUNTS),
-                    }
-                ),
-                cv.has_at_least_one_key(SERVICE_AMOUNT, SERVICE_PREDEFINED_AMOUNT),
-            ),
-            InventoryNumber.take,
-        )
-
-        platform.async_register_entity_service(
-            SERVICE_STORE,
-            {
-                vol.Required(SERVICE_AMOUNT): AMOUNT_SCHEMA,
-            },
-            InventoryNumber.store,
-        )
 
 
 class InventoryNumber(InventoryManagerEntity, RestoreNumber):
@@ -230,40 +186,3 @@ class InventoryNumber(InventoryManagerEntity, RestoreNumber):
                     self.entity_type, float(last_number_data[NATIVE_VALUE])
                 )
         await super().async_added_to_hass()
-
-    @property
-    def supported_features(self) -> int:
-        """
-        Return 4.
-
-        This is a hack, because apparently custom features are not possible.
-        This is only used to allow restriction of target entity in service call.
-        """
-        if self.entity_type == InventoryManagerEntityType.SUPPLY:
-            return 4  # LightEntityFeature.EFFECT
-        return 0
-
-    @core.callback
-    def take(self, call: core.ServiceCall) -> None:
-        """Execute the consume service call."""
-        if SERVICE_PREDEFINED_AMOUNT in call.data:
-            dose = InventoryManagerEntityType[
-                call.data[SERVICE_PREDEFINED_AMOUNT].upper()
-            ]
-            _LOGGER.debug(
-                "Calling service 'consume' with predefined amount %s, which is %f",
-                call.data[SERVICE_PREDEFINED_AMOUNT],
-                self.coordinator.get(dose),
-            )
-            self.coordinator.take_dose(dose)
-        elif SERVICE_AMOUNT in call.data:
-            _LOGGER.debug(
-                "Calling service 'consume' with amount %f",
-                call.data[SERVICE_AMOUNT],
-            )
-            self.coordinator.take_number(call.data[SERVICE_AMOUNT])
-
-    @core.callback
-    def store(self, call: core.ServiceCall) -> None:
-        """Execute the service call to store additional supplies."""
-        self.coordinator.take_number(-1 * call.data[SERVICE_AMOUNT])

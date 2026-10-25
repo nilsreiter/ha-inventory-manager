@@ -138,6 +138,8 @@ All consumption entities:
 
 ## Actions
 
+Both actions target items. In the UI, you pick the item's device (e.g. "Vetmedin 5mg"). In YAML, you can use the device (`device_id`) or any of the item's entities (`entity_id`), usually its supply entity, as in the examples below. Areas and labels work too. Each item is only changed once, even if several of its entities are targeted.
+
 ### `inventory_manager.consume`
 
 Reduces the supply count. Use this action in automations when items are consumed.
@@ -154,7 +156,7 @@ target:
 
 **Parameters**:
 - `amount` (required): Number of items consumed (positive number, fractions like `0.5` are allowed)
-- `target.entity_id` (required): The supply entity to consume from
+- `target` (required): The item to consume from
 
 **Example Use Case**: Consume one dishwasher tablet each time the dishwasher starts.
 
@@ -170,7 +172,7 @@ target:
 
 **Parameters**:
 - `predefined-amount` (required): Time slot to consume (`morning`, `noon`, `evening`, `night`, `week`, `month`)
-- `target.entity_id` (required): The supply entity to consume from
+- `target` (required): The item to consume from
 
 **Example Use Case**: Automatically consume the evening dose of medication at a scheduled time.
 
@@ -203,7 +205,7 @@ target:
 
 **Parameters**:
 - `amount` (required): Number of items added (positive number, fractions like `0.5` are allowed)
-- `target.entity_id` (required): The supply entity to add to
+- `target` (required): The item to add to
 
 **Example Use Cases**:
 - Add new supplies after shopping

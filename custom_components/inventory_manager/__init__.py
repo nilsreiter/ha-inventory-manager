@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
+import homeassistant.helpers.config_validation as cv
 from homeassistant.const import Platform
 from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 
@@ -18,6 +19,7 @@ from .data import (
     InventoryManagerConfigEntry,
     InventoryManagerData,
 )
+from .services import async_setup_services
 
 if TYPE_CHECKING:
     from homeassistant import core
@@ -27,6 +29,14 @@ _LOGGER = logging.getLogger(__name__)
 
 
 PLATFORMS: list[str] = [Platform.NUMBER, Platform.SENSOR, Platform.BINARY_SENSOR]
+
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
+
+
+async def async_setup(hass: core.HomeAssistant, _config: dict) -> bool:
+    """Register the actions, independent of the config entries."""
+    async_setup_services(hass)
+    return True
 
 
 async def async_setup_entry(

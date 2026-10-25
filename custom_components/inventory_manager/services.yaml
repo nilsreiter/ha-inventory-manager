@@ -1,10 +1,7 @@
 store:
   target:
-    entity:
-      domain: number
+    device:
       integration: inventory_manager
-      supported_features:
-        - light.LightEntityFeature.EFFECT
   fields:
     amount:
       required: true
@@ -16,11 +13,8 @@ store:
           mode: box
 consume:
   target:
-    entity:
-      domain: number
+    device:
       integration: inventory_manager
-      supported_features:
-        - light.LightEntityFeature.EFFECT
   fields:
     amount:
       example: 42
