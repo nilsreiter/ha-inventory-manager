@@ -132,7 +132,7 @@ All consumption entities:
 - **Entity ID**: `binary_sensor.<item_name>_warning`
 - **Purpose**: Alerts when supply is running low
 - **Device Class**: Problem
-- **State**: 
+- **State**:
   - `On`: Days remaining < configured warning threshold
   - `Off`: Sufficient supply available
 
@@ -319,5 +319,4 @@ Based on the [integration_blueprint template](https://github.com/ludeeus/integra
 
 - 🐛 **Bug Reports**: [Open an issue](https://github.com/nilsreiter/ha-inventory-manager/issues)
 - 💡 **Feature Requests**: [Open an issue](https://github.com/nilsreiter/ha-inventory-manager/issues)
-- 📖 **Documentation**: [This README](https://github.com/nilsreiter/ha-inventory-manager#readme)
 
