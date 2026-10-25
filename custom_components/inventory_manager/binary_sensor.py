@@ -10,7 +10,6 @@ from homeassistant.components.binary_sensor import (
     BinarySensorEntity,
     BinarySensorEntityDescription,
 )
-from homeassistant.const import STATE_UNAVAILABLE
 from homeassistant.helpers import entity_platform
 
 from .const import (
@@ -76,7 +75,6 @@ class WarnSensor(InventoryManagerEntity, BinarySensorEntity):
             InventoryManagerEntityType.WARNING
         ][UNIQUE_ID]
 
-        self._attr_available = False
         self._attr_is_on = False
         self.entity_id = item.entity_config[InventoryManagerEntityType.WARNING][
             ENTITY_ID
@@ -86,12 +84,6 @@ class WarnSensor(InventoryManagerEntity, BinarySensorEntity):
         """Update the state of the entity."""
         _LOGGER.debug("Updating binary sensor")
 
-        days_remaining = self.coordinator.days_remaining()
-        if days_remaining == STATE_UNAVAILABLE:
-            self._attr_is_on = False
-            self._attr_available = False
-        else:
-            self._attr_available = True
-            self._attr_is_on = days_remaining < self.coordinator.config_entry.data.get(
-                CONF_SENSOR_BEFORE_EMPTY, 0
-            )
+        self._attr_is_on = self.coordinator.days_remaining() < (
+            self.coordinator.config_entry.data.get(CONF_SENSOR_BEFORE_EMPTY, 0)
+        )
