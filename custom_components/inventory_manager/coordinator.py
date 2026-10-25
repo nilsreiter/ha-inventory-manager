@@ -95,7 +95,7 @@ class InventoryManagerItem(DataUpdateCoordinator):
         if val < 0:
             self._numbers[spec] = 0.0
         else:
-            self._numbers[spec] = val
+            self._numbers[spec] = float(val)
 
         for et in [
             InventoryManagerEntityType.EMPTYPREDICTION,
@@ -111,7 +111,7 @@ class InventoryManagerItem(DataUpdateCoordinator):
 
     def get(self, entity_type: InventoryManagerEntityType) -> float:
         """Get number."""
-        return self._numbers.setdefault(entity_type, 0)
+        return self._numbers.setdefault(entity_type, 0.0)
 
     def days_remaining(self) -> float:
         """Calculate days remaining."""

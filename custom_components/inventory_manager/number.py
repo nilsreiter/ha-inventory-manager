@@ -226,8 +226,8 @@ class InventoryNumber(InventoryManagerEntity, RestoreNumber):
             last_data = await self.async_get_last_number_data()
             if last_data is not None:
                 last_number_data = last_data.as_dict()
-                if isinstance(last_number_data[NATIVE_VALUE], float):
-                    self.native_value = last_number_data[NATIVE_VALUE]
+                if isinstance(last_number_data[NATIVE_VALUE], (int, float)):
+                    self.native_value = float(last_number_data[NATIVE_VALUE])
                 else:
                     self.native_value = 0.0
         except AttributeError:
