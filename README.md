@@ -10,7 +10,7 @@ A Home Assistant integration for tracking and managing household inventory items
 - 📊 **Flexible Consumption Tracking**: Set different consumption rates for different times (morning, noon, evening, night, weekly, monthly)
 - 🔮 **Predictive Analytics**: Automatically calculates when you'll run out based on consumption patterns
 - ⚠️ **Smart Alerts**: Get advance warnings before supplies run out (configurable threshold)
-- 🔄 **Easy Updates**: Simple services to consume items or add new supplies
+- 🔄 **Easy Updates**: Simple actions to consume items or add new supplies
 - 🏠 **Native Integration**: Fully integrated with Home Assistant's automation system
 
 ## Use Cases
@@ -81,9 +81,13 @@ To modify an item's configuration:
 4. Update the desired fields
 5. Click **Submit**
 
+Changing the name, size or unit does not change the entity IDs, so automations and dashboards keep working.
+
 ## Entities
 
-Each configured item creates multiple entities:
+Each configured item creates multiple entities. Their IDs are based on the item name at the time the item was created (e.g. `number.vetmedin_5mg_supply` for "Vetmedin 5mg"). If another item already uses the same name, a number is appended (e.g. `number.vetmedin_5mg_2_supply`).
+
+**Note**: For items created with an earlier version of this integration, the IDs also contain the size, if one was set (e.g. `number.vetmedin_5mg_30_supply`). These IDs are kept as they are.
 
 ### Number Entities
 
@@ -116,32 +120,34 @@ All consumption entities:
 ### Sensor Entities
 
 #### Empty Prediction
-- **Entity ID**: `sensor.<item_name>_supply_empty`
+- **Entity ID**: `sensor.<item_name>_emptyprediction`
 - **Purpose**: Predicts when supply will run out
 - **Device Class**: Timestamp
 - **Attributes**:
   - `days_remaining`: Calculated days until empty
 
-**Calculation**: Based on current supply and daily consumption rate. Monthly consumption is calculated as per 28 days for prediction purposes.
+**Calculation**: Based on current supply and daily consumption rate. Monthly consumption is calculated as per 28 days for prediction purposes. If no consumption is configured, the supply never runs out: the sensor is `unknown` and `days_remaining` is empty.
 
 #### Warning/Problem Indicator
 - **Entity ID**: `binary_sensor.<item_name>_warning`
 - **Purpose**: Alerts when supply is running low
 - **Device Class**: Problem
-- **State**: 
+- **State**:
   - `On`: Days remaining < configured warning threshold
-  - `Off`: Sufficient supply available
+  - `Off`: Sufficient supply available, or no consumption configured
 
-## Services
+## Actions
+
+Both actions target items. In the UI, you pick one or more items in the **Item** field (e.g. "Vetmedin 5mg"). In YAML, you can use the item's device (`device_id`) or any of the item's entities (`entity_id`), usually its supply entity, as in the examples below. Areas and labels work in YAML too. Each item is only changed once, even if several of its entities are targeted.
 
 ### `inventory_manager.consume`
 
-Reduces the supply count. Use this service in automations when items are consumed.
+Reduces the supply count. Use this action in automations when items are consumed.
 
 #### Method 1: Specify Exact Amount
 
 ```yaml
-service: inventory_manager.consume
+action: inventory_manager.consume
 data:
   amount: 1
 target:
@@ -149,15 +155,15 @@ target:
 ```
 
 **Parameters**:
-- `amount` (required): Number of items consumed (positive integer)
-- `target.entity_id` (required): The supply entity to consume from
+- `amount` (required): Number of items consumed (positive number, fractions like `0.5` are allowed)
+- `target` (required): The item to consume from
 
 **Example Use Case**: Consume one dishwasher tablet each time the dishwasher starts.
 
 #### Method 2: Use Predefined Time Slot
 
 ```yaml
-service: inventory_manager.consume
+action: inventory_manager.consume
 data:
   predefined-amount: evening
 target:
@@ -166,14 +172,14 @@ target:
 
 **Parameters**:
 - `predefined-amount` (required): Time slot to consume (`morning`, `noon`, `evening`, `night`, `week`, `month`)
-- `target.entity_id` (required): The supply entity to consume from
+- `target` (required): The item to consume from
 
 **Example Use Case**: Automatically consume the evening dose of medication at a scheduled time.
 
 #### Method 3: Consume Multiple Items
 
 ```yaml
-service: inventory_manager.consume
+action: inventory_manager.consume
 data:
   predefined-amount: evening
 target:
@@ -190,7 +196,7 @@ target:
 Increases the supply count when new items are added to inventory.
 
 ```yaml
-service: inventory_manager.store
+action: inventory_manager.store
 data:
   amount: 30
 target:
@@ -198,8 +204,8 @@ target:
 ```
 
 **Parameters**:
-- `amount` (required): Number of items added (positive integer)
-- `target.entity_id` (required): The supply entity to add to
+- `amount` (required): Number of items added (positive number, fractions like `0.5` are allowed)
+- `target` (required): The item to add to
 
 **Example Use Cases**:
 - Add new supplies after shopping
@@ -213,11 +219,11 @@ target:
 ```yaml
 automation:
   - alias: "Give Dog Evening Medication"
-    trigger:
-      - platform: time
+    triggers:
+      - trigger: time
         at: "18:00:00"
-    action:
-      - service: inventory_manager.consume
+    actions:
+      - action: inventory_manager.consume
         data:
           predefined-amount: evening
         target:
@@ -231,12 +237,12 @@ automation:
 ```yaml
 automation:
   - alias: "Track Dishwasher Tab Usage"
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id: sensor.dishwasher_status
         to: "running"
-    action:
-      - service: inventory_manager.consume
+    actions:
+      - action: inventory_manager.consume
         data:
           amount: 1
         target:
@@ -248,12 +254,12 @@ automation:
 ```yaml
 automation:
   - alias: "Alert When Medication Running Low"
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id: binary_sensor.vetmedin_5mg_warning
         to: "on"
-    action:
-      - service: notify.mobile_app
+    actions:
+      - action: notify.mobile_app
         data:
           title: "Medication Alert"
           message: "Vetmedin 5mg is running low! Time to reorder."
@@ -264,16 +270,16 @@ automation:
 ```yaml
 automation:
   - alias: "Restock Medication via NFC"
-    trigger:
-      - platform: tag
+    triggers:
+      - trigger: tag
         tag_id: "medication_restock"
-    action:
-      - service: inventory_manager.store
+    actions:
+      - action: inventory_manager.store
         data:
           amount: 30
         target:
           entity_id: number.vetmedin_5mg_supply
-      - service: notify.mobile_app
+      - action: notify.mobile_app
         data:
           message: "Added 30 tablets to Vetmedin inventory"
 ```
@@ -293,10 +299,10 @@ automation:
 - Remember: Monthly consumption is calculated as consumption per 28 days
 - Daily consumption is calculated as: `morning + noon + evening + night + (week/7) + (month/28)`
 
-### Service Not Working
+### Action Not Working
 
-- Verify the entity ID in your service call matches the actual entity
-- Ensure you're using the correct service parameter (`amount` or `predefined-amount`, not both)
+- Verify the entity ID in your action call matches the actual entity
+- Ensure you're using the correct action parameter (exactly one of `amount` or `predefined-amount`)
 - Check Home Assistant logs for error messages: Settings → System → Logs
 
 ## Contributing
@@ -315,5 +321,4 @@ Based on the [integration_blueprint template](https://github.com/ludeeus/integra
 
 - 🐛 **Bug Reports**: [Open an issue](https://github.com/nilsreiter/ha-inventory-manager/issues)
 - 💡 **Feature Requests**: [Open an issue](https://github.com/nilsreiter/ha-inventory-manager/issues)
-- 📖 **Documentation**: [GitHub Wiki](https://github.com/nilsreiter/ha-inventory-manager)
 

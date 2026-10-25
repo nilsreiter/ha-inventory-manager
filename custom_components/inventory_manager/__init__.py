@@ -3,13 +3,14 @@
 from __future__ import annotations
 
 import logging
-from datetime import timedelta
 from typing import TYPE_CHECKING
 
+import homeassistant.helpers.config_validation as cv
 from homeassistant.const import Platform
 from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 
 from .const import (
+    CONF_ITEM_ID,
     CONF_ITEM_VENDOR,
     DOMAIN,
 )
@@ -18,6 +19,7 @@ from .data import (
     InventoryManagerConfigEntry,
     InventoryManagerData,
 )
+from .services import async_setup_services
 
 if TYPE_CHECKING:
     from homeassistant import core
@@ -28,17 +30,23 @@ _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS: list[str] = [Platform.NUMBER, Platform.SENSOR, Platform.BINARY_SENSOR]
 
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
+
+
+async def async_setup(hass: core.HomeAssistant, _config: dict) -> bool:
+    """Register the actions, independent of the config entries."""
+    async_setup_services(hass)
+    return True
+
 
 async def async_setup_entry(
     hass: core.HomeAssistant, entry: InventoryManagerConfigEntry
 ) -> bool:
     """Set up platform from a ConfigEntry."""
-    hass.data.setdefault(DOMAIN, {})
-
+    # All changes are pushed to the entities, so there is nothing to poll
     coordinator = InventoryManagerItem(
-        entry, hass, logger=_LOGGER, name=DOMAIN, update_interval=timedelta(hours=1)
+        entry, hass, logger=_LOGGER, name=DOMAIN, update_interval=None
     )
-    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
     entry.runtime_data = InventoryManagerData(
         device_info=DeviceInfo(
             identifiers={(DOMAIN, entry.entry_id)},
@@ -53,6 +61,26 @@ async def async_setup_entry(
 
     # Register update listener to handle option changes
     entry.async_on_unload(entry.add_update_listener(async_reload_entry))
+
+    return True
+
+
+async def async_migrate_entry(
+    hass: core.HomeAssistant, entry: InventoryManagerConfigEntry
+) -> bool:
+    """Migrate old config entries."""
+    if entry.version > 1:
+        return False
+
+    if entry.minor_version < 2:  # noqa: PLR2004
+        # Unique ids used to be derived from the title, so keep using it to
+        # leave the existing entities (and their restored state) untouched.
+        hass.config_entries.async_update_entry(
+            entry,
+            data={**entry.data, CONF_ITEM_ID: entry.title},
+            minor_version=2,
+        )
+        _LOGGER.debug("Migrated %s to version 1.2", entry.title)
 
     return True
 

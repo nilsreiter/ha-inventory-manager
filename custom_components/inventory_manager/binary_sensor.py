@@ -10,7 +10,6 @@ from homeassistant.components.binary_sensor import (
     BinarySensorEntity,
     BinarySensorEntityDescription,
 )
-from homeassistant.const import STATE_UNAVAILABLE
 from homeassistant.helpers import entity_platform
 
 from .const import (
@@ -52,7 +51,6 @@ async def async_setup_entry(
             WarnSensor(config_entry.runtime_data.coordinator, description)
             for description in SENSOR_TYPES
         ],
-        update_before_add=True,
     )
 
 
@@ -60,6 +58,7 @@ class WarnSensor(InventoryManagerEntity, BinarySensorEntity):
     """Represents a warning entity."""
 
     _attr_has_entity_name = True
+    entity_type = InventoryManagerEntityType.WARNING
 
     def __init__(
         self, item: InventoryManagerItem, description: BinarySensorEntityDescription
@@ -69,7 +68,6 @@ class WarnSensor(InventoryManagerEntity, BinarySensorEntity):
         self.entity_description = description
 
         _LOGGER.debug("Initializing WarnSensor")
-        self.coordinator.entity[InventoryManagerEntityType.WARNING] = self
         self.platform = entity_platform.async_get_current_platform()
 
         self._attr_should_poll = False
@@ -77,28 +75,16 @@ class WarnSensor(InventoryManagerEntity, BinarySensorEntity):
             InventoryManagerEntityType.WARNING
         ][UNIQUE_ID]
 
-        self._attr_available = False
         self._attr_is_on = False
         self.entity_id = item.entity_config[InventoryManagerEntityType.WARNING][
             ENTITY_ID
         ]
 
-    async def async_added_to_hass(self) -> None:
-        """Call update to get initial state after entity is added."""
-        await super().async_added_to_hass()
-        self.update()
-
-    def update(self) -> None:
+    def _update_from_item(self) -> None:
         """Update the state of the entity."""
         _LOGGER.debug("Updating binary sensor")
 
         days_remaining = self.coordinator.days_remaining()
-        if days_remaining == STATE_UNAVAILABLE:
-            self._attr_is_on = False
-            self._attr_available = False
-        else:
-            self._attr_available = True
-            self._attr_is_on = days_remaining < self.coordinator.config_entry.data.get(
-                CONF_SENSOR_BEFORE_EMPTY, 0
-            )
-        self.schedule_update_ha_state()
+        self._attr_is_on = days_remaining is not None and days_remaining < (
+            self.coordinator.config_entry.data.get(CONF_SENSOR_BEFORE_EMPTY, 0)
+        )

@@ -1,7 +1,6 @@
 """Coordinator for Inventory Manager integration."""
 
 import logging
-import uuid
 from typing import Any
 
 from homeassistant.helpers.entity import generate_entity_id
@@ -9,6 +8,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from slugify import slugify
 
 from .const import (
+    CONF_ITEM_ID,
     ENTITY_ID,
     ENTITY_TYPE,
     SPACE,
@@ -35,9 +35,9 @@ class InventoryManagerItem(DataUpdateCoordinator):
             **kwargs: Additional keyword arguments passed to DataUpdateCoordinator.
 
         """
-        super().__init__(*args, **kwargs)
+        super().__init__(*args, config_entry=config_entry, **kwargs)
         self._numbers = {}
-        self.config_entry = config_entry
+        self.config_entry: InventoryManagerConfigEntry = config_entry
 
         self.entity = {}
         self.entity_config = {
@@ -56,11 +56,10 @@ class InventoryManagerItem(DataUpdateCoordinator):
         else:
             fmt = "number.{}"
 
-        # We try to generate a sensible unique id
-        if self.config_entry.entry_id is not None and entity_type.name is not None:
-            unique_id = slugify(self.config_entry.title + SPACE + entity_type.name)
-        else:
-            unique_id = str(uuid.uuid4())
+        # The item id never changes, so neither do the unique ids
+        unique_id = slugify(
+            self.config_entry.data[CONF_ITEM_ID] + SPACE + entity_type.name
+        )
         return {
             UNIQUE_ID: unique_id,
             ENTITY_ID: generate_entity_id(fmt, unique_id, hass=self.hass),
@@ -91,19 +90,19 @@ class InventoryManagerItem(DataUpdateCoordinator):
             )
 
     def set(self, spec: InventoryManagerEntityType, val: float) -> None:
-        """Set one number."""
+        """Set one number. Must be called from the event loop."""
         if val < 0:
             self._numbers[spec] = 0.0
         else:
-            self._numbers[spec] = val
+            self._numbers[spec] = float(val)
 
         for et in [
+            spec,
             InventoryManagerEntityType.EMPTYPREDICTION,
             InventoryManagerEntityType.WARNING,
-            InventoryManagerEntityType.SUPPLY,
         ]:
-            if et in self.entity and self.entity[et] is not None:
-                self.entity[et].update()
+            if (entity := self.entity.get(et)) is not None:
+                entity.async_item_updated()
             else:
                 _LOGGER.debug(
                     "%s cannot be updated yet", InventoryManagerEntityType(et).name
@@ -111,15 +110,15 @@ class InventoryManagerItem(DataUpdateCoordinator):
 
     def get(self, entity_type: InventoryManagerEntityType) -> float:
         """Get number."""
-        return self._numbers.setdefault(entity_type, 0)
+        return self._numbers.setdefault(entity_type, 0.0)
 
-    def days_remaining(self) -> float:
-        """Calculate days remaining."""
+    def days_remaining(self) -> float | None:
+        """Calculate days remaining, or None if nothing is consumed."""
         supply = self.get(InventoryManagerEntityType.SUPPLY)
         daily = self.daily_consumption()
         if daily > 0:
             return supply / daily
-        return 10000
+        return None
 
     def daily_consumption(self) -> float:
         """Calculate the daily consumption."""

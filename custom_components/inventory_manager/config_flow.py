@@ -12,9 +12,11 @@ from homeassistant.config_entries import (
     OptionsFlow,
 )
 from homeassistant.core import callback
+from slugify import slugify
 
 from .const import (
     CONF_ITEM_AGENT,
+    CONF_ITEM_ID,
     CONF_ITEM_MAX_CONSUMPTION,
     CONF_ITEM_NAME,
     CONF_ITEM_SIZE,
@@ -32,6 +34,8 @@ def _build_entry_title(data: dict[str, Any]) -> str:
     title = data.get(CONF_ITEM_NAME, "")
     if data.get(CONF_ITEM_SIZE):
         title += " " + str(data[CONF_ITEM_SIZE])
+        if data.get(CONF_ITEM_UNIT):
+            title += str(data[CONF_ITEM_UNIT])
     return title
 
 
@@ -46,13 +50,14 @@ INVENTORY_MANAGER_SCHEMA = vol.Schema(
         vol.Optional(CONF_ITEM_VENDOR): cv.string,
     }
 )
+INVENTORY_MANAGER_FIELDS = {marker.schema for marker in INVENTORY_MANAGER_SCHEMA.schema}
 
 
 class InventoryConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle config flow for Inventory Manager integration."""
 
     VERSION = 1
-    MINOR_VERSION = 1
+    MINOR_VERSION = 2
 
     data: dict[str, Any] | None
 
@@ -71,7 +76,10 @@ class InventoryConfigFlow(ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] = {}
         if user_input is not None:
             # Input is valid, set data.
-            self.data = user_input
+            self.data = {
+                **user_input,
+                CONF_ITEM_ID: self._new_item_id(user_input[CONF_ITEM_NAME]),
+            }
             # Return the form of the next step.
             return self.async_create_entry(
                 title=_build_entry_title(self.data),
@@ -82,6 +90,19 @@ class InventoryConfigFlow(ConfigFlow, domain=DOMAIN):
             step_id="user", data_schema=INVENTORY_MANAGER_SCHEMA, errors=errors
         )
 
+    def _new_item_id(self, name: str) -> str:
+        """Derive an item id from the name that no other entry uses yet."""
+        taken = {
+            slugify(entry.data.get(CONF_ITEM_ID, ""))
+            for entry in self._async_current_entries(include_ignore=False)
+        }
+        item_id = name
+        suffix = 2
+        while slugify(item_id) in taken:
+            item_id = f"{name} {suffix}"
+            suffix += 1
+        return item_id
+
 
 class InventoryOptionsFlowHandler(OptionsFlow):
     """Handle options flow for Inventory Manager."""
@@ -91,54 +112,28 @@ class InventoryOptionsFlowHandler(OptionsFlow):
     ) -> ConfigFlowResult:
         """Manage the options."""
         if user_input is not None:
-            # Update config entry with new data (merging with existing)
+            # Keep data that is not part of the form (e.g. the item id), but
+            # take all form fields from the input so cleared fields are removed
+            data = {
+                key: value
+                for key, value in self.config_entry.data.items()
+                if key not in INVENTORY_MANAGER_FIELDS
+            }
             self.hass.config_entries.async_update_entry(
                 self.config_entry,
                 title=_build_entry_title(user_input),
-                data={**self.config_entry.data, **user_input},
+                data={**data, **user_input},
             )
             # Return empty entry to signal completion (data is already saved above)
             return self.async_create_entry(title="", data={})
 
-        # Get current values from config entry
+        # Same form as when creating the entry, pre-filled with current values
         current_data = self.config_entry.data
-
-        # Create schema with current values as defaults
-        options_schema = vol.Schema(
-            {
-                vol.Required(
-                    CONF_ITEM_NAME,
-                    default=current_data.get(CONF_ITEM_NAME, ""),
-                ): cv.string,
-                vol.Optional(
-                    CONF_ITEM_SIZE,
-                    default=current_data.get(CONF_ITEM_SIZE),
-                ): cv.positive_int,
-                vol.Required(
-                    CONF_ITEM_UNIT,
-                    default=current_data.get(CONF_ITEM_UNIT, ""),
-                ): cv.string,
-                vol.Optional(
-                    CONF_ITEM_AGENT,
-                    default=current_data.get(CONF_ITEM_AGENT, ""),
-                ): cv.string,
-                vol.Optional(
-                    CONF_ITEM_VENDOR,
-                    default=current_data.get(CONF_ITEM_VENDOR, ""),
-                ): cv.string,
-                vol.Optional(
-                    CONF_ITEM_MAX_CONSUMPTION,
-                    default=current_data.get(CONF_ITEM_MAX_CONSUMPTION, 5.0),
-                ): cv.positive_float,
-                vol.Required(
-                    CONF_SENSOR_BEFORE_EMPTY,
-                    default=current_data.get(CONF_SENSOR_BEFORE_EMPTY, 10),
-                ): cv.positive_int,
-            }
-        )
         return self.async_show_form(
             step_id="init",
-            data_schema=options_schema,
+            data_schema=self.add_suggested_values_to_schema(
+                INVENTORY_MANAGER_SCHEMA, current_data
+            ),
             description_placeholders={
                 "name": current_data.get(CONF_ITEM_NAME, "Item name")
             },

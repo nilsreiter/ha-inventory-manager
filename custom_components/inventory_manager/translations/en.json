@@ -1,10 +1,6 @@
 {
   "title": "Inventory Manager",
   "config": {
-    "error": {
-      "auth": "The auth token provided is not valid.",
-      "invalid_path": "The path provided is not valid. Should be in the format `user/repo-name`."
-    },
     "step": {
       "user": {
         "data": {
@@ -34,6 +30,7 @@
     "step": {
       "init": {
         "data": {
+          "item_name": "Object name",
           "item_agent": "Agent name",
           "item_size": "Weight or size",
           "item_unit": "Unit (e.g., g)",
@@ -59,6 +56,10 @@
       "name": "Consume",
       "description": "This service can be called to consume a specified or predefined number of pieces from a supply. It belongs to the Inventory Manager integration. Important: Only one of the fields `amount` and `predefined-amount` can be specified.",
       "fields": {
+        "device_id": {
+          "name": "Item",
+          "description": "The items to change."
+        },
         "amount": {
           "name": "Amount",
           "description": "How many pieces should we consume?"
@@ -66,6 +67,20 @@
         "predefined-amount": {
           "name": "Predefined Amount",
           "description": "Which pre-defined amount do we consume?"
+        }
+      }
+    },
+    "store": {
+      "name": "Store",
+      "description": "This service can be called to increase the supply of an item.",
+      "fields": {
+        "device_id": {
+          "name": "Item",
+          "description": "The items to change."
+        },
+        "amount": {
+          "name": "Amount",
+          "description": "How many pieces are added to the supply?"
         }
       }
     }

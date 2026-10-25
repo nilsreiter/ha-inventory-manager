@@ -4,6 +4,8 @@ DOMAIN = "inventory_manager"
 
 SPACE = " "
 
+# Fixed when the entry is created; entity unique ids are derived from it
+CONF_ITEM_ID = "item_id"
 CONF_ITEM_NAME = "item_name"
 CONF_ITEM_SIZE = "item_size"
 CONF_ITEM_VENDOR = "item_vendor"
@@ -34,6 +36,7 @@ STRING_MONTH_ENTITY = "month_entity"
 SERVICE_AMOUNT = "amount"
 SERVICE_PREDEFINED_AMOUNT = "predefined-amount"
 SERVICE_AMOUNT_SPECIFICATION = "amount-specification"
+PREDEFINED_AMOUNTS = ["morning", "noon", "evening", "night", "week", "month"]
 
 NATIVE_VALUE = "native_value"
 UNIQUE_ID = "unique_id"
