@@ -1,10 +1,6 @@
 {
   "title": "Inventory Manager",
   "config": {
-    "error": {
-      "auth": "The auth token provided is not valid.",
-      "invalid_path": "The path provided is not valid. Should be in the format `user/repo-name`."
-    },
     "step": {
       "user": {
         "data": {
@@ -67,6 +63,16 @@
         "predefined-amount": {
           "name": "Predefined Amount",
           "description": "Which pre-defined amount do we consume?"
+        }
+      }
+    },
+    "store": {
+      "name": "Store",
+      "description": "This service can be called to increase the supply of an item.",
+      "fields": {
+        "amount": {
+          "name": "Amount",
+          "description": "How many pieces are added to the supply?"
         }
       }
     }
