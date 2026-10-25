@@ -9,9 +9,11 @@ store:
     amount:
       required: true
       example: 42
-      default: 0
       selector:
         number:
+          min: 0
+          step: any
+          mode: box
 consume:
   target:
     entity:
@@ -22,9 +24,11 @@ consume:
   fields:
     amount:
       example: 42
-      default: 0
       selector:
         number:
+          min: 0
+          step: any
+          mode: box
     predefined-amount:
       example: "morning"
       selector:

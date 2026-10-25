@@ -149,7 +149,7 @@ target:
 ```
 
 **Parameters**:
-- `amount` (required): Number of items consumed (positive integer)
+- `amount` (required): Number of items consumed (positive number, fractions like `0.5` are allowed)
 - `target.entity_id` (required): The supply entity to consume from
 
 **Example Use Case**: Consume one dishwasher tablet each time the dishwasher starts.
@@ -198,7 +198,7 @@ target:
 ```
 
 **Parameters**:
-- `amount` (required): Number of items added (positive integer)
+- `amount` (required): Number of items added (positive number, fractions like `0.5` are allowed)
 - `target.entity_id` (required): The supply entity to add to
 
 **Example Use Cases**:
@@ -296,7 +296,7 @@ automation:
 ### Service Not Working
 
 - Verify the entity ID in your service call matches the actual entity
-- Ensure you're using the correct service parameter (`amount` or `predefined-amount`, not both)
+- Ensure you're using the correct service parameter (exactly one of `amount` or `predefined-amount`)
 - Check Home Assistant logs for error messages: Settings → System → Logs
 
 ## Contributing

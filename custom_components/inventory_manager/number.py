@@ -46,6 +46,9 @@ if TYPE_CHECKING:
 
 _LOGGER = logging.getLogger(__name__)
 
+# Amounts may be fractional (e.g. half a tablet), but must be positive
+AMOUNT_SCHEMA = vol.All(vol.Coerce(float), vol.Range(min=0, min_included=False))
+
 
 @dataclass(frozen=True, kw_only=True)
 class InventoryManagerNumberEntityDescription(NumberEntityDescription):
@@ -138,23 +141,26 @@ async def async_setup_entry(
 
         platform.async_register_entity_service(
             SERVICE_CONSUME,
-            {
-                vol.Exclusive(
-                    SERVICE_AMOUNT, SERVICE_AMOUNT_SPECIFICATION
-                ): cv.positive_int,
-                vol.Exclusive(
-                    SERVICE_PREDEFINED_AMOUNT, SERVICE_AMOUNT_SPECIFICATION
-                ): vol.In(PREDEFINED_AMOUNTS),
-            },
+            vol.All(
+                cv.make_entity_service_schema(
+                    {
+                        vol.Exclusive(
+                            SERVICE_AMOUNT, SERVICE_AMOUNT_SPECIFICATION
+                        ): AMOUNT_SCHEMA,
+                        vol.Exclusive(
+                            SERVICE_PREDEFINED_AMOUNT, SERVICE_AMOUNT_SPECIFICATION
+                        ): vol.In(PREDEFINED_AMOUNTS),
+                    }
+                ),
+                cv.has_at_least_one_key(SERVICE_AMOUNT, SERVICE_PREDEFINED_AMOUNT),
+            ),
             lambda target, payload: target.take(payload),
         )
 
         platform.async_register_entity_service(
             SERVICE_STORE,
             {
-                vol.Required(
-                    SERVICE_AMOUNT, SERVICE_AMOUNT_SPECIFICATION
-                ): cv.positive_int,
+                vol.Required(SERVICE_AMOUNT): AMOUNT_SCHEMA,
             },
             lambda target, payload: target.store(payload),
         )
