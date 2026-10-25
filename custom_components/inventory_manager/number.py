@@ -125,7 +125,7 @@ async def async_setup_entry(
 ) -> NoneType:
     """Set up number entities and register service."""
     # Get the item object
-    coordinator: InventoryManagerItem = hass.data[DOMAIN][config_entry.entry_id]
+    coordinator: InventoryManagerItem = config_entry.runtime_data.coordinator
 
     # Create numeric entities
     entities = [

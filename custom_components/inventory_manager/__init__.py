@@ -34,12 +34,9 @@ async def async_setup_entry(
     hass: core.HomeAssistant, entry: InventoryManagerConfigEntry
 ) -> bool:
     """Set up platform from a ConfigEntry."""
-    hass.data.setdefault(DOMAIN, {})
-
     coordinator = InventoryManagerItem(
         entry, hass, logger=_LOGGER, name=DOMAIN, update_interval=timedelta(hours=1)
     )
-    hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
     entry.runtime_data = InventoryManagerData(
         device_info=DeviceInfo(
             identifiers={(DOMAIN, entry.entry_id)},
