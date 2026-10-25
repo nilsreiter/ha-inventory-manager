@@ -3,6 +3,7 @@
 DOMAIN = "inventory_manager"
 
 SPACE = " "
+UNDERSCORE = "_"
 
 CONF_ITEM_NAME = "item_name"
 CONF_ITEM_SIZE = "item_size"
