@@ -35,9 +35,9 @@ class InventoryManagerItem(DataUpdateCoordinator):
             **kwargs: Additional keyword arguments passed to DataUpdateCoordinator.
 
         """
-        super().__init__(*args, **kwargs)
+        super().__init__(*args, config_entry=config_entry, **kwargs)
         self._numbers = {}
-        self.config_entry = config_entry
+        self.config_entry: InventoryManagerConfigEntry = config_entry
 
         self.entity = {}
         self.entity_config = {
