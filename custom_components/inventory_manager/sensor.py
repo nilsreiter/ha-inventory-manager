@@ -90,17 +90,17 @@ class EmptyPredictionSensor(InventoryManagerEntity, SensorEntity):
         self.unique_id = entity_config[UNIQUE_ID]
         self._attr_extra_state_attributes = {}
         self.entity_id = entity_config[ENTITY_ID]
-        self._attr_native_value: datetime = now() + timedelta(days=10000)
+        self._attr_native_value: datetime | None = None
 
     def _update_from_item(self) -> None:
         """Recalculate the remaining time until supply is empty."""
         _LOGGER.debug("Updating sensor")
 
-        self._attr_extra_state_attributes[ATTR_DAYS_REMAINING] = (
-            self.coordinator.days_remaining()
-        )
-        self._attr_native_value = now() + timedelta(
-            days=self.coordinator.days_remaining()
+        days_remaining = self.coordinator.days_remaining()
+        self._attr_extra_state_attributes[ATTR_DAYS_REMAINING] = days_remaining
+        # Without consumption, the supply never runs out, so the date is unknown
+        self._attr_native_value = (
+            None if days_remaining is None else now() + timedelta(days=days_remaining)
         )
         _LOGGER.debug(
             "Setting native value of %s to %s", self.entity_id, self._attr_native_value

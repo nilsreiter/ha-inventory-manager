@@ -84,6 +84,7 @@ class WarnSensor(InventoryManagerEntity, BinarySensorEntity):
         """Update the state of the entity."""
         _LOGGER.debug("Updating binary sensor")
 
-        self._attr_is_on = self.coordinator.days_remaining() < (
+        days_remaining = self.coordinator.days_remaining()
+        self._attr_is_on = days_remaining is not None and days_remaining < (
             self.coordinator.config_entry.data.get(CONF_SENSOR_BEFORE_EMPTY, 0)
         )

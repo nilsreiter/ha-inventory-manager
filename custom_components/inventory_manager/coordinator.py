@@ -112,13 +112,13 @@ class InventoryManagerItem(DataUpdateCoordinator):
         """Get number."""
         return self._numbers.setdefault(entity_type, 0.0)
 
-    def days_remaining(self) -> float:
-        """Calculate days remaining."""
+    def days_remaining(self) -> float | None:
+        """Calculate days remaining, or None if nothing is consumed."""
         supply = self.get(InventoryManagerEntityType.SUPPLY)
         daily = self.daily_consumption()
         if daily > 0:
             return supply / daily
-        return 10000
+        return None
 
     def daily_consumption(self) -> float:
         """Calculate the daily consumption."""

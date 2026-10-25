@@ -126,7 +126,7 @@ All consumption entities:
 - **Attributes**:
   - `days_remaining`: Calculated days until empty
 
-**Calculation**: Based on current supply and daily consumption rate. Monthly consumption is calculated as per 28 days for prediction purposes.
+**Calculation**: Based on current supply and daily consumption rate. Monthly consumption is calculated as per 28 days for prediction purposes. If no consumption is configured, the supply never runs out: the sensor is `unknown` and `days_remaining` is empty.
 
 #### Warning/Problem Indicator
 - **Entity ID**: `binary_sensor.<item_name>_warning`
@@ -134,7 +134,7 @@ All consumption entities:
 - **Device Class**: Problem
 - **State**:
   - `On`: Days remaining < configured warning threshold
-  - `Off`: Sufficient supply available
+  - `Off`: Sufficient supply available, or no consumption configured
 
 ## Actions
 
