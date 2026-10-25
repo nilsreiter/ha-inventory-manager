@@ -12,9 +12,11 @@ from homeassistant.config_entries import (
     OptionsFlow,
 )
 from homeassistant.core import callback
+from slugify import slugify
 
 from .const import (
     CONF_ITEM_AGENT,
+    CONF_ITEM_ID,
     CONF_ITEM_MAX_CONSUMPTION,
     CONF_ITEM_NAME,
     CONF_ITEM_SIZE,
@@ -54,7 +56,7 @@ class InventoryConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle config flow for Inventory Manager integration."""
 
     VERSION = 1
-    MINOR_VERSION = 1
+    MINOR_VERSION = 2
 
     data: dict[str, Any] | None
 
@@ -73,7 +75,10 @@ class InventoryConfigFlow(ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] = {}
         if user_input is not None:
             # Input is valid, set data.
-            self.data = user_input
+            self.data = {
+                **user_input,
+                CONF_ITEM_ID: self._new_item_id(user_input[CONF_ITEM_NAME]),
+            }
             # Return the form of the next step.
             return self.async_create_entry(
                 title=_build_entry_title(self.data),
@@ -83,6 +88,19 @@ class InventoryConfigFlow(ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="user", data_schema=INVENTORY_MANAGER_SCHEMA, errors=errors
         )
+
+    def _new_item_id(self, name: str) -> str:
+        """Derive an item id from the name that no other entry uses yet."""
+        taken = {
+            slugify(entry.data.get(CONF_ITEM_ID, ""))
+            for entry in self._async_current_entries(include_ignore=False)
+        }
+        item_id = name
+        suffix = 2
+        while slugify(item_id) in taken:
+            item_id = f"{name} {suffix}"
+            suffix += 1
+        return item_id
 
 
 class InventoryOptionsFlowHandler(OptionsFlow):

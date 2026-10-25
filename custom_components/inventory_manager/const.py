@@ -3,8 +3,9 @@
 DOMAIN = "inventory_manager"
 
 SPACE = " "
-UNDERSCORE = "_"
 
+# Fixed when the entry is created; entity unique ids are derived from it
+CONF_ITEM_ID = "item_id"
 CONF_ITEM_NAME = "item_name"
 CONF_ITEM_SIZE = "item_size"
 CONF_ITEM_VENDOR = "item_vendor"

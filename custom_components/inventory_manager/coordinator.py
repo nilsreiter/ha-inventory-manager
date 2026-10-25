@@ -1,7 +1,6 @@
 """Coordinator for Inventory Manager integration."""
 
 import logging
-import uuid
 from typing import Any
 
 from homeassistant.helpers.entity import generate_entity_id
@@ -9,10 +8,10 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from slugify import slugify
 
 from .const import (
-    CONF_ITEM_NAME,
+    CONF_ITEM_ID,
     ENTITY_ID,
     ENTITY_TYPE,
-    UNDERSCORE,
+    SPACE,
     UNIQUE_ID,
 )
 from .data import InventoryManagerConfigEntry
@@ -57,15 +56,10 @@ class InventoryManagerItem(DataUpdateCoordinator):
         else:
             fmt = "number.{}"
 
-        # We try to generate a sensible unique id
-        if self.config_entry.entry_id is not None and entity_type.name is not None:
-            unique_id = slugify(
-                self.config_entry.data.get(CONF_ITEM_NAME, "")
-                + UNDERSCORE
-                + entity_type.name
-            )
-        else:
-            unique_id = str(uuid.uuid4())
+        # The item id never changes, so neither do the unique ids
+        unique_id = slugify(
+            self.config_entry.data[CONF_ITEM_ID] + SPACE + entity_type.name
+        )
         return {
             UNIQUE_ID: unique_id,
             ENTITY_ID: generate_entity_id(fmt, unique_id, hass=self.hass),

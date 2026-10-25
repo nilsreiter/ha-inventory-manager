@@ -10,6 +10,7 @@ from homeassistant.const import Platform
 from homeassistant.helpers.device_registry import DeviceEntryType, DeviceInfo
 
 from .const import (
+    CONF_ITEM_ID,
     CONF_ITEM_VENDOR,
     DOMAIN,
 )
@@ -53,6 +54,26 @@ async def async_setup_entry(
 
     # Register update listener to handle option changes
     entry.async_on_unload(entry.add_update_listener(async_reload_entry))
+
+    return True
+
+
+async def async_migrate_entry(
+    hass: core.HomeAssistant, entry: InventoryManagerConfigEntry
+) -> bool:
+    """Migrate old config entries."""
+    if entry.version > 1:
+        return False
+
+    if entry.minor_version < 2:  # noqa: PLR2004
+        # Unique ids used to be derived from the title, so keep using it to
+        # leave the existing entities (and their restored state) untouched.
+        hass.config_entries.async_update_entry(
+            entry,
+            data={**entry.data, CONF_ITEM_ID: entry.title},
+            minor_version=2,
+        )
+        _LOGGER.debug("Migrated %s to version 1.2", entry.title)
 
     return True
 
