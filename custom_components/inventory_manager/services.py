@@ -22,6 +22,7 @@ from .const import (
     SERVICE_AMOUNT,
     SERVICE_AMOUNT_SPECIFICATION,
     SERVICE_CONSUME,
+    SERVICE_FILL,
     SERVICE_PREDEFINED_AMOUNT,
     SERVICE_STORE,
 )
@@ -62,6 +63,15 @@ STORE_SCHEMA = vol.All(
     _HAS_TARGET,
 )
 
+FILL_SCHEMA = vol.All(
+    vol.Schema(
+        {
+            **cv.ENTITY_SERVICE_FIELDS,
+        }
+    ),
+    _HAS_TARGET,
+)
+
 
 @callback
 def async_setup_services(hass: HomeAssistant) -> None:
@@ -93,6 +103,15 @@ def async_setup_services(hass: HomeAssistant) -> None:
     def store(call: ServiceCall) -> None:
         for item in _targeted_items(hass, call):
             item.take_number(-1 * call.data[SERVICE_AMOUNT])
+
+    @callback
+    def fill(call: ServiceCall) -> None:
+        for item in _targeted_items(hass, call):
+            item.fill()
+
+    hass.services.async_register(DOMAIN, SERVICE_FILL, fill, FILL_SCHEMA)
+
+    hass.services.async_register(DOMAIN, SERVICE_FILL, fill, FILL_SCHEMA)
 
     hass.services.async_register(DOMAIN, SERVICE_CONSUME, consume, CONSUME_SCHEMA)
     hass.services.async_register(DOMAIN, SERVICE_STORE, store, STORE_SCHEMA)
