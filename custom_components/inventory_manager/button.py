@@ -2,14 +2,12 @@
 
 from __future__ import annotations
 
-import logging
 from typing import TYPE_CHECKING
 
-from homeassistant import config_entries, core
 from homeassistant.components.button import ButtonEntity
 
-
 if TYPE_CHECKING:
+    from homeassistant import config_entries, core
     from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
     from .coordinator import InventoryManagerItem

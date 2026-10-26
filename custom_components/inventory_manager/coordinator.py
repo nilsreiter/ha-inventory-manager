@@ -3,9 +3,9 @@
 import logging
 from typing import Any
 
+from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers.entity import generate_entity_id
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
-from homeassistant.exceptions import ServiceValidationError
 from slugify import slugify
 
 from .const import (
