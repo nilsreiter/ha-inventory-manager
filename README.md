@@ -62,8 +62,9 @@ For detailed HACS custom repository instructions, see the [HACS documentation](h
 | Field | Required | Description | Default |
 |-------|----------|-------------|---------|
 | **Item Name** | Yes | Name of the item (e.g., "Vetmedin 5mg", "Dishwasher Tabs") | - |
-| **Item Size** | No | Size or quantity per package (e.g., 30, 100) | - |
+| **Item Size** | No | Size or quantity in relation to unit of measure (eg. 20mg) | - |
 | **Item Unit** | No | Unit of measurement (e.g., "pcs", "tablets", "tabs") | "pcs." |
+| **Package Quantity** | No | Total Units in a new Package, used for Fill | 0 |
 | **Item Vendor** | No | Manufacturer or vendor name | - |
 | **Item Agent** | No | Additional identifier (e.g., active ingredient) | - |
 | **Max Consumption** | Yes | Maximum allowed consumption per time slot | 5.0 |
