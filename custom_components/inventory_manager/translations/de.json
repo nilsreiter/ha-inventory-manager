@@ -83,6 +83,10 @@
           "description": "Wie viele Einheiten werden eingelagert?"
         }
       }
+    },
+    "fill": {
+      "name": "Auffüllen",
+      "description": "Fügt eine Paketmenge zum Vorrat hinzu, basierend auf dem Paketmenge-Wert des Geräts. Keine Parameter erforderlich."
     }
   },
   "selector": {
@@ -106,6 +110,9 @@
             "pcs.": "Stk."
           }
         }
+      },
+      "package_quantity_entity": {
+        "name": "Paketmenge"
       },
       "morning_entity": {
         "name": "Morgens"

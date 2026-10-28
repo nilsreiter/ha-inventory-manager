@@ -1,4 +1,4 @@
-"""Tests for the consume and store actions."""
+"""Tests for the consume, store, and fill actions."""
 
 import pytest
 import voluptuous as vol
@@ -41,6 +41,47 @@ async def test_consume_and_store(hass: HomeAssistant) -> None:
     assert state(hass, "binary_sensor.pills_warning") == "on"
 
 
+async def _set_package_quantity(hass: HomeAssistant, value: float) -> None:
+    await hass.services.async_call(
+        "number",
+        "set_value",
+        {"entity_id": "number.pills_package_quantity", "value": value},
+        blocking=True,
+    )
+
+
+async def test_fill(hass: HomeAssistant) -> None:
+    """Fill adds one package quantity, and needs it to be set."""
+    await setup_entry(hass, item_entry())
+    supply = {"entity_id": "number.pills_supply"}
+
+    # A new item has no package quantity, so nothing is added
+    with pytest.raises(ServiceValidationError):
+        await _call(hass, "fill", supply)
+    assert state(hass, "number.pills_supply") == "0.0"
+
+    await _set_package_quantity(hass, 30)
+    await _call(hass, "store", {**supply, "amount": 5})
+    await _call(hass, "fill", supply)
+    assert state(hass, "number.pills_supply") == "35.0"
+    assert state(hass, "number.pills_package_quantity") == "30.0"
+
+    # Setting the package quantity back to 0 makes fill fail again
+    await _set_package_quantity(hass, 0)
+    with pytest.raises(ServiceValidationError):
+        await _call(hass, "fill", supply)
+    assert state(hass, "number.pills_supply") == "35.0"
+
+
+async def test_negative_package_quantity(hass: HomeAssistant) -> None:
+    """A negative package quantity is rejected, so fill can never remove supply."""
+    await setup_entry(hass, item_entry())
+
+    with pytest.raises(ServiceValidationError):
+        await _set_package_quantity(hass, -5)
+    assert state(hass, "number.pills_package_quantity") == "0.0"
+
+
 @pytest.mark.parametrize(
     ("action", "data"),
     [
@@ -51,6 +92,7 @@ async def test_consume_and_store(hass: HomeAssistant) -> None:
         ("consume", {"predefined-amount": "evenign"}),
         ("store", {}),
         ("store", {"amount": 0}),
+        ("fill", {"amount": 1}),
     ],
 )
 async def test_invalid_data(hass: HomeAssistant, action: str, data: dict) -> None:

@@ -3,6 +3,7 @@
 import logging
 from typing import Any
 
+from homeassistant.exceptions import ServiceValidationError
 from homeassistant.helpers.entity import generate_entity_id
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from slugify import slugify
@@ -107,6 +108,26 @@ class InventoryManagerItem(DataUpdateCoordinator):
                 _LOGGER.debug(
                     "%s cannot be updated yet", InventoryManagerEntityType(et).name
                 )
+
+    def add_number(self, number: float) -> None:
+        """Add specified number to the supply."""
+        if number != 0:
+            self.set(
+                InventoryManagerEntityType.SUPPLY,
+                self.get(InventoryManagerEntityType.SUPPLY) + number,
+            )
+
+    def fill(self) -> None:
+        """Add one package worth of supply. Must be called from the event loop."""
+        amount = self.get(InventoryManagerEntityType.PACKAGE_QUANTITY)
+        if amount <= 0:
+            msg = (
+                f"The package quantity of {self.config_entry.title} is 0, "
+                "set it before filling"
+            )
+            raise ServiceValidationError(msg)
+        _LOGGER.debug("Filling %s with %f", self.config_entry.title, amount)
+        self.add_number(amount)
 
     def get(self, entity_type: InventoryManagerEntityType) -> float:
         """Get number."""

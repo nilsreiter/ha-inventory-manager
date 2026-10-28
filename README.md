@@ -62,8 +62,9 @@ For detailed HACS custom repository instructions, see the [HACS documentation](h
 | Field | Required | Description | Default |
 |-------|----------|-------------|---------|
 | **Item Name** | Yes | Name of the item (e.g., "Vetmedin 5mg", "Dishwasher Tabs") | - |
-| **Item Size** | No | Size or quantity per package (e.g., 30, 100) | - |
+| **Item Size** | No | Size or quantity in relation to unit of measure (eg. 20mg) | - |
 | **Item Unit** | No | Unit of measurement (e.g., "pcs", "tablets", "tabs") | "pcs." |
+| **Package Quantity** | No | Total Units in a new Package, used for Fill | 0 |
 | **Item Vendor** | No | Manufacturer or vendor name | - |
 | **Item Agent** | No | Additional identifier (e.g., active ingredient) | - |
 | **Max Consumption** | Yes | Maximum allowed consumption per time slot | 5.0 |
@@ -99,6 +100,15 @@ Each configured item creates multiple entities. Their IDs are based on the item 
 - **Range**: 0 to 1,000,000
 - **Step**: 0.25
 
+#### Package Quantity
+- **Entity ID**: `number.<item_name>_package_quantity`
+- **Purpose**: Defines how many units come in one package/bottle
+- **Type**: Number input
+- **Unit**: Configurable (default: "pcs.")
+- **Range**: 0 to 10,000
+- **Step**: 0.25
+- **Category**: Configuration
+
 #### Consumption Time Slots (Configuration)
 These entities define how much is consumed at different times:
 
@@ -116,6 +126,13 @@ All consumption entities:
 - **Range**: 0 to configured max consumption
 - **Step**: 0.25
 - **Category**: Configuration
+
+### Button Entities
+
+#### Fill
+- **Entity ID**: `button.<item_name>_fill`
+- **Purpose**: Adds one package worth of supply in a single press
+- **Requires**: Package Quantity to be set to a non-zero value
 
 ### Sensor Entities
 
@@ -206,6 +223,25 @@ target:
 **Parameters**:
 - `amount` (required): Number of items added (positive number, fractions like `0.5` are allowed)
 - `target` (required): The item to add to
+
+**Example Use Cases**:
+- Add new supplies after shopping
+- Trigger from NFC tag when new package is opened
+- Button press when restocking
+
+### `inventory_manager.fill`
+
+Increases the supply count by the package_quantity.
+
+```yaml
+service: inventory_manager.fill
+target:
+  entity_id: number.vetmedin_5mg_supply
+```
+
+**Parameters**:
+- `amount` (required): Number of items added (positive integer)
+- `target.entity_id` (required): The supply entity to add to
 
 **Example Use Cases**:
 - Add new supplies after shopping

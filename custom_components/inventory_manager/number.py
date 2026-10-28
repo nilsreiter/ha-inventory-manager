@@ -19,6 +19,7 @@ from .const import (
     STRING_MORNING_ENTITY,
     STRING_NIGHT_ENTITY,
     STRING_NOON_ENTITY,
+    STRING_PACKAGE_QUANTITY_ENTITY,
     STRING_SUPPLY_ENTITY,
     STRING_WEEK_ENTITY,
     UNIQUE_ID,
@@ -51,6 +52,14 @@ NUMBER_TYPES: tuple[InventoryManagerNumberEntityDescription, ...] = (
         has_entity_name=True,
         entity_type=InventoryManagerEntityType.SUPPLY,
         icon="mdi:medication",
+    ),
+    InventoryManagerNumberEntityDescription(
+        key="package_quantity",
+        translation_key=STRING_PACKAGE_QUANTITY_ENTITY,
+        has_entity_name=True,
+        entity_type=InventoryManagerEntityType.PACKAGE_QUANTITY,
+        icon="mdi:package-variant",
+        entity_category=EntityCategory.CONFIG,
     ),
     InventoryManagerNumberEntityDescription(
         key="morning",
@@ -159,6 +168,8 @@ class InventoryNumber(InventoryManagerEntity, RestoreNumber):
         # Set max value based on entity type
         if self.entity_type == InventoryManagerEntityType.SUPPLY:
             self.native_max_value = 1000000
+        elif self.entity_type == InventoryManagerEntityType.PACKAGE_QUANTITY:
+            self.native_max_value = 10000
         else:
             self.native_max_value = float(
                 item.config_entry.data.get(CONF_ITEM_MAX_CONSUMPTION, 5)
